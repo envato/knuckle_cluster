@@ -78,7 +78,10 @@ Argument | Description
 command | Runs a command on the specified container/agent. When connecting to containers, this defaults to `bash`
 auto | Automatically connects to the first container/agent it can find. Handy when used in conjunction with `command`.
 
-
+Eg: To connect to a container, echo something and then immediately disconnect you could use:
+```
+kc.connect_to_containers(auto: true, command: "echo I love KnuckleCluster!")
+```
 ## License
 
 The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
