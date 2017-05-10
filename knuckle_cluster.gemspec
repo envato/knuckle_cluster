@@ -36,5 +36,5 @@ Gem::Specification.new do |spec|
 
 
   spec.add_dependency 'aws-sdk', '~> 2.8'
-  spec.add_dependency 'table_print'
+  spec.add_dependency 'table_print', '~> 1.5'
 end
