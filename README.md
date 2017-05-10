@@ -1,6 +1,6 @@
-# ClusterShuck
+# KnuckleCluster
 
-Have you ever wanted to shuck away the hard, rough exterior of an ECS cluster and get to the soft, chewy innards? Sounds like you need ClusterShuck!
+Have you ever wanted to shuck away the hard, rough exterior of an ECS cluster and get to the soft, chewy innards? Sounds like you need KnuckleCluster!
 This tool provides scripts (usually invoked via rakefile) to list and connect to (and optionally run commands on) ecs agents and containers via ssh.
 
 ## Installation
@@ -23,13 +23,15 @@ Or install it yourself as:
 
 ## Usage
 
+You'll need to execute this all with appropriate AWS permissions on the cluster in question, stored in your ENV. I like to use `aws-vault` to handle this for me.
+
 It takes one argument at minimum: `cluster_name` .  A region is likely also required as it will default to `us-east-1`.
 Eg:
 ```
-cs = ClusterShuck.new(cluster_name: 'cluster_name')
+kc = KnuckleCluster.new(cluster_name: 'cluster_name')
 ```
 
-## Options for ClusterShuck
+## Options for KnuckleCluster
 Possible options are below. If left blank, they will be ignored and defaults used where available.:
 
 Argument | Description
@@ -41,9 +43,9 @@ rsa_key_location | The RSA key needed to connect to an ecs agent eg `~/.ssh/id_r
 ssh_username | The username to conncet. Will default to `ec2-user`
 
 
-Once you have an instance of ClusterShuck, you can now do things!
+Once you have an instance of KnuckleCluster, you can now do things!
 ```
-$ cs.connect_to_containers
+$ kc.connect_to_containers
 ```
 Which will give you the output and run bash for you on the actual docker container:
 ```
@@ -58,7 +60,7 @@ Connect to which container?
 
 Same with connecting directly to agents
 ```
-cs.connect_to_agents
+kc.connect_to_agents
 ```
 ```
 Listing Agents
