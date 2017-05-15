@@ -26,7 +26,7 @@ module KnuckleCluster
         conn_idx = 0
       else
         puts "\nListing Agents"
-        tp agent_data, :index, :instance_id, :ip, :az, tasks: ->(u){u[:tasks].map{|x| x[:definition]}.join(", ")}
+        tp agent_data, :index, :instance_id, :ip, :az, tasks: {display_method: ->(u){u[:tasks].map{|x| x[:definition]}.join(", ")}, width: 999}
         puts "\nConnect to which agent?"
         conn_idx = STDIN.gets.strip.to_i - 1
       end
