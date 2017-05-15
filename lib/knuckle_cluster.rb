@@ -5,12 +5,13 @@ require 'table_print'
 
 module KnuckleCluster
   class << self
-    def new(cluster_name:, region:'us-east-1', bastion: nil, rsa_key_location: nil, ssh_username: 'ec2-user')
+    def new(cluster_name:, region:'us-east-1', bastion: nil, rsa_key_location: nil, ssh_username: 'ec2-user', sudo: false)
       @cluster_name      = cluster_name
       @region            = region
       @bastion           = bastion
       @rsa_key_location  = rsa_key_location
       @ssh_username      = ssh_username
+      @sudo              = sudo
       self
     end
 
@@ -49,7 +50,7 @@ module KnuckleCluster
       end
 
       task = task_data[conn_idx]
-      subcommand = "docker exec -it \\`docker ps \| grep #{task[:name]} \| awk \'{print \\$1}\'\\` #{command}"
+      subcommand = "#{'sudo ' if @sudo}docker exec -it \\`#{'sudo ' if @sudo}docker ps \| grep #{task[:name]} \| awk \'{print \\$1}\'\\` #{command}"
       command = generate_connection_string(ip: task[:agent][:ip], subcommand: subcommand)
       system(command)
     end
