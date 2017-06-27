@@ -26,7 +26,7 @@ module KnuckleCluster
         conn_idx = 0
       else
         puts "\nListing Agents"
-        tp agent_data, :index, :instance_id, :ip, :az, tasks: {display_method: ->(u){u[:tasks].map{|x| x[:definition]}.join(", ")}, width: 999}
+        tp agent_data, :index, :instance_id, :ip, :az, tasks: {display_method: ->(u){u[:tasks].map{|x| x[:definition]}.uniq.join(", ")}, width: 999}
         puts "\nConnect to which agent?"
         conn_idx = STDIN.gets.strip.to_i - 1
       end
@@ -36,22 +36,21 @@ module KnuckleCluster
     end
 
     def connect_to_containers(command: 'bash', auto: false)
-      task_data.each do |task|
-        task[:agent] = agent_data.select{|x| x[:container_instance_arn] == task[:container_instance_arn]}.first
-      end
 
       if auto
         conn_idx = 0
       else
         puts "\nListing Containers"
-        tp task_data, :index, :name, instance: ->(u) {u[:agent][:instance_id]}
+        tp task_data, :index, {container_name: {width: 999}}, {task_name: {width: 999}}, instance: {display_method: ->(u) {u[:agent][:instance_id]}}
         puts "\nConnect to which container?"
         conn_idx = STDIN.gets.strip.to_i - 1
       end
 
       task = task_data[conn_idx]
-      subcommand = "#{'sudo ' if @sudo}docker exec -it \\`#{'sudo ' if @sudo}docker ps \| grep #{task[:name]} \| awk \'{print \\$1}\'\\` #{command}"
+      subcommand = "#{'sudo ' if @sudo}docker exec -it \\`#{'sudo ' if @sudo}docker ps \| grep #{task[:task_name]} \| grep #{task[:container_name]} \| awk \'{print \\$1}\'\\` #{command}"
+      puts "Subcommand: #{subcommand}"
       command = generate_connection_string(ip: task[:agent][:ip], subcommand: subcommand)
+      puts "command: #{command}"
       system(command)
     end
 
@@ -82,17 +81,20 @@ module KnuckleCluster
         task_arns = ecs.list_tasks({cluster: @cluster_name}).task_arns
         task_ids  = task_arns.map{|x| x[/.*\/(.*)/,1]}
         return [] if task_ids.empty?
-        tasks     = ecs.describe_tasks({tasks: task_ids, cluster: @cluster_name}).tasks
+        tasks = ecs.describe_tasks({tasks: task_ids, cluster: @cluster_name}).tasks
         tasks.each do |task|
-          tmp = {}
-          tmp[:index]                  = data.length + 1 #ugh
-          tmp[:arn]                    = task.task_arn
-          tmp[:container_instance_arn] = task.container_instance_arn
-          tmp[:definition]             = task.task_definition_arn[/.*\/(.*):.*/,1]
-          if c = task[:containers].first
-            tmp[:name] = c[:name]
+          task_name = task.task_definition_arn[/.*\/(.*):\d/,1]
+          task.containers.each do |container|
+            tmp = {}
+            tmp[:index]                  = data.length + 1 #ugh
+            tmp[:arn]                    = task.task_arn
+            tmp[:container_instance_arn] = task.container_instance_arn
+            tmp[:agent]                  = agent_data.select{|x| x[:container_instance_arn] == task.container_instance_arn}.first
+            tmp[:definition]             = task.task_definition_arn[/.*\/(.*):.*/,1]
+            tmp[:task_name]              = task_name
+            tmp[:container_name]         = container[:name]
+            data << tmp
           end
-          data << tmp
         end
       end
     end
