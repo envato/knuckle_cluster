@@ -2,7 +2,10 @@
 require "knuckle_cluster"
 require "yaml"
 
-file = '/Users/poho/.ssh/knuckle_cluster'
+file = File.join(ENV['HOME'],'.ssh/knuckle_cluster')
+
+raise "File #{file} not found" unless File.exists?(file)
+
 data = YAML.load_file(file)
 
 key = ARGV[0]
@@ -14,9 +17,6 @@ new_data = {}
 data[key].each do |k,v|
   new_data[k.to_sym] = v
 end
-
-      require 'pry'
-      binding.pry
 
 kc = KnuckleCluster.new(
   new_data
