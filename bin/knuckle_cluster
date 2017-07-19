@@ -1,0 +1,31 @@
+#!/usr/bin/env bundle exec ruby
+require "knuckle_cluster"
+require "yaml"
+
+file = '/Users/poho/.ssh/knuckle_cluster'
+data = YAML.load_file(file)
+
+key = ARGV[0]
+unless data.keys.include?(key)
+  raise "Config file does not include profile for #{key}"
+end
+
+new_data = {}
+data[key].each do |k,v|
+  new_data[k.to_sym] = v
+end
+
+      require 'pry'
+      binding.pry
+
+kc = KnuckleCluster.new(
+  new_data
+)
+
+if ARGV[1] == 'agents'
+  kc.connect_to_agents
+elsif ARGV[1] == 'containers'
+  kc.connect_to_containers
+else
+  raise "Unknown command #{ARGV[1]}"
+end
