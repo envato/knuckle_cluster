@@ -105,6 +105,13 @@ command | Runs a command on the specified container/agent. When connecting to co
 auto | Automatically connects to the first container/agent it can find. Handy when used in conjunction with `command`.
 
 
+
+Eg: To connect to a container, echo something and then immediately disconnect you could use:
+```
+kc.connect_to_containers(auto: true, command: "echo I love KnuckleCluster!")
+```
+
+
 ## Options for KnuckleCluster
 Possible options are below. If left blank, they will be ignored and defaults used where available.:
 
@@ -116,7 +123,4 @@ bastion | if you have a bastion to proxy to your ecs cluster via ssh, put the na
 rsa_key_location | The RSA key needed to connect to an ecs agent eg `~/.ssh/id_rsa`.
 ssh_username | The username to conncet. Will default to `ec2-user`
 sudo | true or false - will sudo the `docker` command on the target machine. Usually not needed unless the user is not a part of the `docker` group.
-## License
-
-The gem is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
 
