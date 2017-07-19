@@ -40,7 +40,7 @@ platform:
   sudo: true
 ```
 
-See [Options for KnuckleCluster](#options-for-knuckle-cluster) below for a list of what each option does.
+See [Options for Knuckle Cluster](#options-for-knuckle-cluster) below for a list of what each option does.
 
 Run with `knuckle_cluster platform agents` or `knuckle_cluster platform containers`
 
@@ -112,7 +112,7 @@ kc.connect_to_containers(auto: true, command: "echo I love KnuckleCluster!")
 ```
 
 
-## Options for KnuckleCluster
+## Options for Knuckle Cluster
 Possible options are below. If left blank, they will be ignored and defaults used where available.:
 
 Argument | Description
