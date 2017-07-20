@@ -32,12 +32,13 @@ You'll need to execute knuckle_cluster with appropriate AWS permissions on the c
 Create a file: `~/.ssh/knuckle_cluster`.  This is the config file that will be used to make connections from the command line.  It is a yaml file.  The connection name is the key, and all parameters are below it. EG:
 ```
 platform:
-  cluster_name: 'platform-ecs-cluster-ABC123',
-  region: 'us-east-1',
-  bastion: 'platform_bastion',
-  rsa_key_location: "~/.ssh/platform_rsa_key",
-  ssh_username: "ubuntu",
+  cluster_name: platform-ecs-cluster-ABC123
+  region: us-east-1
+  bastion: platform_bastion
+  rsa_key_location: ~/.ssh/platform_rsa_key
+  ssh_username: ubuntu
   sudo: true
+  aws_vault_profile: platform-production
 ```
 
 See [Options for Knuckle Cluster](#options-for-knuckle-cluster) below for a list of what each option does.
@@ -123,4 +124,4 @@ bastion | if you have a bastion to proxy to your ecs cluster via ssh, put the na
 rsa_key_location | The RSA key needed to connect to an ecs agent eg `~/.ssh/id_rsa`.
 ssh_username | The username to conncet. Will default to `ec2-user`
 sudo | true or false - will sudo the `docker` command on the target machine. Usually not needed unless the user is not a part of the `docker` group.
-
+aws_vault_profile | If you use the `aws-vault` tool to manage your AWS credentials, you can specify a profile here that will be automatically used to connect to this cluster.

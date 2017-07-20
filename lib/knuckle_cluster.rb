@@ -5,13 +5,21 @@ require 'table_print'
 
 module KnuckleCluster
   class << self
-    def new(cluster_name:, region:'us-east-1', bastion: nil, rsa_key_location: nil, ssh_username: 'ec2-user', sudo: false)
+    def new(
+        cluster_name:,
+        region: 'us-east-1',
+        bastion: nil,
+        rsa_key_location: nil,
+        ssh_username: 'ec2-user',
+        sudo: false,
+        aws_vault_profile: nil)
       @cluster_name      = cluster_name
       @region            = region
       @bastion           = bastion
       @rsa_key_location  = rsa_key_location
       @ssh_username      = ssh_username
       @sudo              = sudo
+      @aws_vault_profile = aws_vault_profile
       self
     end
 
@@ -36,6 +44,7 @@ module KnuckleCluster
     end
 
     def connect_to_containers(command: 'bash', auto: false)
+      task_data
 
       if auto
         conn_idx = 0
@@ -47,10 +56,8 @@ module KnuckleCluster
       end
 
       task = task_data[conn_idx]
-      subcommand = "#{'sudo ' if @sudo}docker exec -it \\`#{'sudo ' if @sudo}docker ps \| grep #{task[:task_name]} \| grep #{task[:container_name]} \| awk \'{print \\$1}\'\\` #{command}"
-      puts "Subcommand: #{subcommand}"
+      subcommand = "#{'sudo ' if sudo}docker exec -it \\`#{'sudo ' if sudo}docker ps \| grep #{task[:task_name]} \| grep #{task[:container_name]} \| awk \'{print \\$1}\'\\` #{command}"
       command = generate_connection_string(ip: task[:agent][:ip], subcommand: subcommand)
-      puts "command: #{command}"
       system(command)
     end
 
@@ -60,28 +67,50 @@ module KnuckleCluster
 
     private
 
+    attr_reader :cluster_name, :region, :bastion, :rsa_key_location, :ssh_username, :sudo, :aws_vault_profile
+
     def ecs
-      @ecs ||= Aws::ECS::Client.new(region: @region)
+      @ecs ||= Aws::ECS::Client.new(aws_client_config)
     end
 
     def ec2
-      @ec2 ||= Aws::EC2::Client.new(region: @region)
+      @ec2 ||= Aws::EC2::Client.new(aws_client_config)
+    end
+
+    def aws_client_config
+      @aws_client_config ||= { region: region }.tap do |config|
+        if aws_vault_profile
+          access_key_id, secret_access_key, session_token = aws_vault_credentials
+          config[:access_key_id] = access_key_id
+          config[:secret_access_key] = secret_access_key
+          config[:session_token] = session_token
+        end
+      end
+    end
+
+    def aws_vault_credentials
+      environment = `aws-vault exec #{aws_vault_profile} -- env | grep AWS_`
+      vars = environment.split.map { |pair| pair.split('=') }.group_by(&:first)
+      access_key_id = vars['AWS_ACCESS_KEY_ID']&.first&.last
+      secret_access_key = vars['AWS_SECRET_ACCESS_KEY']&.first&.last
+      session_token = vars['AWS_SESSION_TOKEN']&.first&.last
+      [access_key_id, secret_access_key, session_token]
     end
 
     def generate_connection_string(ip:, subcommand: nil)
-      command = "ssh #{ip} -l#{@ssh_username}"
-      command += " -i #{@rsa_key_location}" if @rsa_key_location
-      command += " -o ProxyCommand='ssh -qxT #{@bastion} nc #{ip} 22'" if @bastion
+      command = "ssh #{ip} -l#{ssh_username}"
+      command += " -i #{rsa_key_location}" if rsa_key_location
+      command += " -o ProxyCommand='ssh -qxT #{bastion} nc #{ip} 22'" if bastion
       command += " -t \"#{subcommand}\"" if subcommand
       command
     end
 
     def task_data
       @task_data ||= [].tap do |data|
-        task_arns = ecs.list_tasks({cluster: @cluster_name}).task_arns
+        task_arns = ecs.list_tasks({cluster: cluster_name}).task_arns
         task_ids  = task_arns.map{|x| x[/.*\/(.*)/,1]}
         return [] if task_ids.empty?
-        tasks = ecs.describe_tasks({tasks: task_ids, cluster: @cluster_name}).tasks
+        tasks = ecs.describe_tasks({tasks: task_ids, cluster: cluster_name}).tasks
         tasks.each do |task|
           task_name = task.task_definition_arn[/.*\/(.*):\d/,1]
           task.containers.each do |container|
@@ -101,12 +130,12 @@ module KnuckleCluster
 
     def agent_data
       @agent_data ||= (
-        container_instances = ecs.list_container_instances(cluster: @cluster_name).container_instance_arns
+        container_instances = ecs.list_container_instances(cluster: cluster_name).container_instance_arns
         return [] if container_instances.empty?
 
         ec2_instance_data = {}.tap do |data|
           ecs.describe_container_instances(
-          cluster: @cluster_name,
+          cluster: cluster_name,
           container_instances: container_instances).container_instances.each do |ci|
             data[ci.ec2_instance_id] = ci.container_instance_arn
           end
