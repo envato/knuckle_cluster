@@ -6,8 +6,8 @@ require 'knuckle_cluster/version'
 Gem::Specification.new do |spec|
   spec.name          = "knuckle_cluster"
   spec.version       = KnuckleCluster::VERSION
-  spec.authors       = ["Peter Hofmann"]
-  spec.email         = ["peter@envato.com"]
+  spec.authors       = ["Peter Hofmann", "Giancarlo Salamanca"]
+  spec.email         = ["peter.hofmann@envato.com"]
 
   spec.summary       = %q{Handy cluster tool}
   spec.description   = %q{Ever wanted to shuck away the hard, rough exterior of an ECS cluster and get to the soft, chewy innards? Sounds like you need KnuckleCluster!}
@@ -36,6 +36,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'table_print', '~> 1.5'
 
   spec.bindir        = "bin"
-  # spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.executables = 'knuckle_cluster'
 end
