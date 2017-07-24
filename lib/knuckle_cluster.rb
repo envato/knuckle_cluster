@@ -25,41 +25,30 @@ module KnuckleCluster
     end
 
     def connect_to_agents(command: nil, auto: false)
-      agent_data.each do |agent|
-        agent[:tasks] = task_data.select{|task|
-          task[:container_instance_arn] == agent[:container_instance_arn]
-        }
-      end
-
       if auto
         conn_idx = 0
       else
         puts "\nListing Agents"
-        tp agent_data, :index, :instance_id, :ip, :az, tasks: {display_method: ->(u){u[:tasks].map{|x| x[:definition]}.uniq.join(", ")}, width: 999}
+        tp cluster_agents_with_tasks, :index, :instance_id, :ip, :az, tasks: {display_method: ->(u){u[:tasks].map{|x| x[:definition]}.uniq.join(", ")}, width: 999}
         puts "\nConnect to which agent?"
         conn_idx = STDIN.gets.strip.to_i - 1
       end
 
-      command = generate_connection_string(ip: agent_data[conn_idx][:ip], subcommand: command)
+      command = generate_connection_string(ip: cluster_agents_with_tasks[conn_idx][:ip], subcommand: command)
       system(command)
     end
 
     def connect_to_containers(command: 'bash', auto: false)
-      task_data
+      task_containers
 
-      if auto
-        conn_idx = 0
-      else
-        puts "\nListing Containers"
-        tp task_data, :index, {container_name: {width: 999}}, {task_name: {width: 999}}, instance: {display_method: ->(u) {u[:agent][:instance_id]}}
-        puts "\nConnect to which container?"
-        conn_idx = STDIN.gets.strip.to_i - 1
-      end
-
-      task = task_data[conn_idx]
+      task = select_container(auto: auto)
       subcommand = "#{'sudo ' if sudo}docker exec -it \\`#{'sudo ' if sudo}docker ps \| grep #{task[:task_name]} \| grep #{task[:container_name]} \| awk \'{print \\$1}\'\\` #{command}"
       command = generate_connection_string(ip: task[:agent][:ip], subcommand: subcommand)
       system(command)
+    end
+
+    def container_logs(container_name:)
+
     end
 
     def reload!
@@ -78,24 +67,33 @@ module KnuckleCluster
       @ec2 ||= Aws::EC2::Client.new(aws_client_config)
     end
 
+    def select_container(auto:)
+      if auto
+        task_containers.first
+      else
+        containers = task_containers
+        puts "\nListing Containers"
+        tp containers, :index, {container_name: {width: 999}}, {task_name: {width: 999}}, instance: {display_method: ->(u) {u[:agent][:instance_id]}}
+        puts "\nConnect to which container?"
+        conn_idx = STDIN.gets.strip.to_i - 1
+      end
+    end
+
+
     def aws_client_config
       @aws_client_config ||= { region: region }.tap do |config|
-        if aws_vault_profile
-          access_key_id, secret_access_key, session_token = aws_vault_credentials
-          config[:access_key_id] = access_key_id
-          config[:secret_access_key] = secret_access_key
-          config[:session_token] = session_token
-        end
+        config.merge!(aws_vault_credentials) if aws_vault_profile
       end
     end
 
     def aws_vault_credentials
       environment = `aws-vault exec #{aws_vault_profile} -- env | grep AWS_`
       vars = environment.split.map { |pair| pair.split('=') }.group_by(&:first)
-      access_key_id = vars['AWS_ACCESS_KEY_ID']&.first&.last
-      secret_access_key = vars['AWS_SECRET_ACCESS_KEY']&.first&.last
-      session_token = vars['AWS_SESSION_TOKEN']&.first&.last
-      [access_key_id, secret_access_key, session_token]
+      {}.tap do |credentials|
+        %i{access_key_id secret_access_key session_token}.map do |var_name|
+          credentials[var_name] = vars["AWS_#{var_name.upcase}"]&.first&.last
+        end
+      end
     end
 
     def generate_connection_string(ip:, subcommand: nil)
@@ -106,60 +104,62 @@ module KnuckleCluster
       command
     end
 
-    def task_data
-      @task_data ||= [].tap do |data|
-        task_arns = ecs.list_tasks({cluster: cluster_name}).task_arns
-        task_ids  = task_arns.map{|x| x[/.*\/(.*)/,1]}
+    def task_containers
+      @task_containers ||= begin
+        task_arns = ecs.list_tasks(cluster: cluster_name).task_arns
+        task_ids  = task_arns.map { |x| x[/.*\/(.*)/,1] }
         return [] if task_ids.empty?
-        tasks = ecs.describe_tasks({tasks: task_ids, cluster: cluster_name}).tasks
-        tasks.each do |task|
-          task_name = task.task_definition_arn[/.*\/(.*):\d/,1]
-          task.containers.each do |container|
-            tmp = {}
-            tmp[:index]                  = data.length + 1 #ugh
-            tmp[:arn]                    = task.task_arn
-            tmp[:container_instance_arn] = task.container_instance_arn
-            tmp[:agent]                  = agent_data.select{|x| x[:container_instance_arn] == task.container_instance_arn}.first
-            tmp[:definition]             = task.task_definition_arn[/.*\/(.*):.*/,1]
-            tmp[:task_name]              = task_name
-            tmp[:container_name]         = container[:name]
-            data << tmp
+
+        ecs.describe_tasks(tasks: task_ids, cluster: cluster_name).tasks.map do |task|
+          task.containers.map do |container|
+            {
+              arn:                    task.task_arn,
+              container_instance_arn: task.container_instance_arn,
+              agent:                  cluster_agents.find { |x| x[:container_instance_arn] == task.container_instance_arn },
+              definition:             task.task_definition_arn[/.*\/(.*):.*/,1],
+              task_name:              task.task_definition_arn[/.*\/(.*):\d/,1],
+              container_name:         container.name,
+            }
           end
+        end.flatten.map.with_index do |container, index|
+          container.merge(index: index + 1)
         end
       end
     end
 
-    def agent_data
-      @agent_data ||= (
-        container_instances = ecs.list_container_instances(cluster: cluster_name).container_instance_arns
-        return [] if container_instances.empty?
+    def cluster_agents
+      @cluster_agents ||= begin
+        container_instance_arns = ecs.list_container_instances(cluster: cluster_name)
+                                     .container_instance_arns
+        return [] if container_instance_arns.empty?
 
-        ec2_instance_data = {}.tap do |data|
-          ecs.describe_container_instances(
-          cluster: cluster_name,
-          container_instances: container_instances).container_instances.each do |ci|
-            data[ci.ec2_instance_id] = ci.container_instance_arn
-          end
+        ecs_instances_by_id = ecs.describe_container_instances(
+          cluster:             cluster_name,
+          container_instances: container_instance_arns,
+        ).container_instances.group_by(&:ec2_instance_id)
+
+        ec2_instance_reservations = ec2.describe_instances(instance_ids: ecs_instances_by_id.keys)
+                                       .reservations
+
+        ec2_instance_reservations.map(&:instances).flatten.map.with_index do |instance, index|
+          {
+            index:                  index + 1,
+            instance_id:            instance[:instance_id],
+            ip:                     bastion ? instance[:private_ip_address] : instance[:public_ip_address],
+            az:                     instance[:placement][:availability_zone],
+            container_instance_arn: ecs_instances_by_id[instance[:instance_id]].first.container_instance_arn,
+          }
         end
+      end
+    end
 
-        instance_data = ec2.describe_instances(instance_ids: ec2_instance_data.keys).to_h
-
-        [].tap do |agents|
-          instance_data[:reservations].each do |res|
-            res[:instances].each do |instance|
-              container_instance_arn = ec2_instance_data[instance[:instance_id]]
-              tmp = {}
-              tmp[:index]       = agents.length + 1 #ugh
-              tmp[:instance_id] = instance[:instance_id]
-              tmp[:ip]          = bastion ? instance[:private_ip_address] : instance[:public_ip_address]
-              tmp[:az]          = instance[:placement][:availability_zone]
-              tmp[:container_instance_arn] = container_instance_arn
-              agents << tmp
-            end
-          end
+    def cluster_agents_with_tasks
+      @cluster_agents_with_tasks ||= cluster_agents.map do |agent|
+        tasks = task_containers.select do |task|
+          task[:container_instance_arn] == agent[:container_instance_arn]
         end
-      )
+        agent.merge(tasks: tasks)
+      end
     end
   end
-
 end
