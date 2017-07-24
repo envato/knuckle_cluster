@@ -151,7 +151,7 @@ module KnuckleCluster
               tmp = {}
               tmp[:index]       = agents.length + 1 #ugh
               tmp[:instance_id] = instance[:instance_id]
-              tmp[:ip]          = instance[:private_ip_address]
+              tmp[:ip]          = bastion ? instance[:private_ip_address] : instance[:public_ip_address]
               tmp[:az]          = instance[:placement][:availability_zone]
               tmp[:container_instance_arn] = container_instance_arn
               agents << tmp
