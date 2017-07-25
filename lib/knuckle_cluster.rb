@@ -1,4 +1,5 @@
 require "knuckle_cluster/version"
+require "knuckle_cluster/configuration"
 
 require 'aws-sdk'
 require 'table_print'
