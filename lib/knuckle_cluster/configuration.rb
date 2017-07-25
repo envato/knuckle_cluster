@@ -34,9 +34,6 @@ class KnuckleCluster::Configuration
   end
 
   private
-  def self.load_profile(data:, profile_name:)
-
-  end
 
   def self.keys_to_symbols(data)
     #Implemented here - beats including activesupport
