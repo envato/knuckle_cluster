@@ -2,24 +2,17 @@
 require "knuckle_cluster"
 require "yaml"
 
-file = File.join(ENV['HOME'],'.ssh/knuckle_cluster')
+profile = ARGV[0]
 
-raise "File #{file} not found" unless File.exists?(file)
-
-data = YAML.load_file(file)
-
-key = ARGV[0]
-unless data.keys.include?(key)
-  raise "Config file does not include profile for #{key}"
-end
-
-new_data = {}
-data[key].each do |k,v|
-  new_data[k.to_sym] = v
+begin
+  config = KnuckleCluster::Configuration.load_parameters(profile: profile)
+rescue => e
+  puts "ERROR: There was a problem loading your configuration: #{e}"
+  exit
 end
 
 kc = KnuckleCluster.new(
-  new_data
+  config
 )
 
 if ARGV[1] == 'agents'
@@ -27,5 +20,5 @@ if ARGV[1] == 'agents'
 elsif ARGV[1] == 'containers'
   kc.connect_to_containers
 else
-  raise "Unknown command #{ARGV[1]}"
+  puts "ERROR: Unknown command #{ARGV[1]}"
 end

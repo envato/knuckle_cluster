@@ -1,0 +1,16 @@
+platform:
+  cluster_name: pohos_super_cluster
+  bastion: mega_awesome_bastion
+  rsa_key_location: ~/.ssh/amazing_rsa_key
+  aws_vault_profile: cool_aws_vault_profile
+  profile: default
+
+
+default:
+  ssh_username: ubuntu
+  bastion: boring_default_bastion
+  profile: lower_profile
+  region: us-east-1
+
+lower_profile:
+  sudo: false

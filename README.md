@@ -38,7 +38,27 @@ platform:
   rsa_key_location: ~/.ssh/platform_rsa_key
   ssh_username: ubuntu
   sudo: true
-  aws_vault_profile: platform-production
+  aws_vault_profile: platform_super_user
+```
+
+You can also use inheritance to simplify the inclusion of multiple similar targets:
+```
+super_platform:
+  cluster_name: super-platform-ecs-cluster-ABC123
+  profile: default_platform
+
+ultra_platform:
+  cluster_name: ultra-platform-ecs-cluster-DEF987
+  profile: default_platform
+  sudo: false
+
+default_platform:
+  region: us-east-1
+  bastion: platform_bastion
+  rsa_key_location: ~/.ssh/platform_rsa_key
+  ssh_username: ubuntu
+  sudo: true
+  aws_vault_profile: platform_super_user
 ```
 
 See [Options for Knuckle Cluster](#options-for-knuckle-cluster) below for a list of what each option does.
@@ -125,3 +145,4 @@ rsa_key_location | The RSA key needed to connect to an ecs agent eg `~/.ssh/id_r
 ssh_username | The username to conncet. Will default to `ec2-user`
 sudo | true or false - will sudo the `docker` command on the target machine. Usually not needed unless the user is not a part of the `docker` group.
 aws_vault_profile | If you use the `aws-vault` tool to manage your AWS credentials, you can specify a profile here that will be automatically used to connect to this cluster.
+profile | Another profile to inherit settings from. Settings from lower profiles can be overridden in higher ones.
