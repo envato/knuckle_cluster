@@ -19,6 +19,8 @@ if ARGV[1] == 'agents'
   kc.connect_to_agents
 elsif ARGV[1] == 'containers'
   kc.connect_to_containers
+elsif ARGV[1] == 'logs'
+  kc.container_logs(name: ARGV[2])
 else
   command = ARGV.drop(2)
   if command.any?

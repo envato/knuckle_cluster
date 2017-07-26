@@ -39,8 +39,10 @@ module KnuckleCluster
       run_command_in_container(task: task, command: command)
     end
 
-    def container_logs(container_name:)
-
+    def container_logs(name:)
+      task = find_container(name: name)
+      subcommand = "#{'sudo ' if sudo}docker logs -f \\`#{'sudo ' if sudo}docker ps \| grep #{task[:task_name]} \| grep #{task[:container_name]} \| awk \'{print \\$1}\'\\`"
+      run_command_in_agent(agent: task[:agent], command: subcommand)
     end
 
     def reload!
@@ -84,7 +86,23 @@ module KnuckleCluster
     end
 
     def find_container(name:)
-      task_containers.find { |task| task[:container_name] == name } || raise("Container '#{name}' not found!")
+      matching = task_containers.select { |task| task[:container_name].include?(name) }
+
+      if matching.empty?
+        puts "No container with a name matching '#{name}' was found"
+        Process.exit
+      end
+
+      unique_names = matching.map { |task| task[:container_name] }.uniq
+
+      if unique_names.uniq.count > 1
+        puts "Containers with the following names were found, please be more specific:"
+        puts unique_names
+        Process.exit
+      end
+
+      # If there are multiple containers with the same name, choose any one
+      matching.first
     end
 
     def run_command_in_container(task:, command:)
