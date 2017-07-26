@@ -26,15 +26,17 @@ module KnuckleCluster
 
     def connect_to_agents(command: nil, auto: false)
       agent = select_agent(auto: auto)
-      command = generate_connection_string(ip: agent[:ip], subcommand: command)
-      system(command)
+      run_command_in_agent(agent: agent, command: command)
     end
 
     def connect_to_containers(command: 'bash', auto: false)
       task = select_container(auto: auto)
-      subcommand = "#{'sudo ' if sudo}docker exec -it \\`#{'sudo ' if sudo}docker ps \| grep #{task[:task_name]} \| grep #{task[:container_name]} \| awk \'{print \\$1}\'\\` #{command}"
-      command = generate_connection_string(ip: task[:agent][:ip], subcommand: subcommand)
-      system(command)
+      run_command_in_container(task: task, command: command)
+    end
+
+    def connect_to_container(name:, command: 'bash')
+      task = find_container(name: name)
+      run_command_in_container(task: task, command: command)
     end
 
     def container_logs(container_name:)
@@ -79,6 +81,20 @@ module KnuckleCluster
         puts "\nConnect to which container?"
         containers[STDIN.gets.strip.to_i - 1]
       end
+    end
+
+    def find_container(name:)
+      task_containers.find { |task| task[:container_name] == name } || raise("Container '#{name}' not found!")
+    end
+
+    def run_command_in_container(task:, command:)
+      subcommand = "#{'sudo ' if sudo}docker exec -it \\`#{'sudo ' if sudo}docker ps \| grep #{task[:task_name]} \| grep #{task[:container_name]} \| awk \'{print \\$1}\'\\` #{command}"
+      run_command_in_agent(agent: task[:agent], command: subcommand)
+    end
+
+    def run_command_in_agent(agent:, command:)
+      command = generate_connection_string(ip: agent[:ip], subcommand: command)
+      system(command)
     end
 
     def aws_client_config

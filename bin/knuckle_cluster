@@ -20,5 +20,10 @@ if ARGV[1] == 'agents'
 elsif ARGV[1] == 'containers'
   kc.connect_to_containers
 else
-  puts "ERROR: Unknown command #{ARGV[1]}"
+  command = ARGV.drop(2)
+  if command.any?
+    kc.connect_to_container(name: ARGV[1], command: command.join(' '))
+  else
+    kc.connect_to_container(name: ARGV[1])
+  end
 end
