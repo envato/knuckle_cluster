@@ -4,6 +4,16 @@ require "yaml"
 
 profile = ARGV[0]
 
+if ARGV.count < 2
+  puts <<~USAGE
+    knuckle_cluster CLUSTER_PROFILE agents - list all agents and select one to start a shell
+    knuckle_cluster CLUSTER_PROFILE containers - list all containers and select one to start a shell
+    knuckle_cluster CLUSTER_PROFILE logs CONTAINER_NAME - tail the logs for a container
+    knuckle_cluster CLUSTER_PROFILE CONTAINER_NAME [OPTIONAL COMMANDS] - connect to a container and start a shell or run a command
+  USAGE
+  exit
+end
+
 begin
   config = KnuckleCluster::Configuration.load_parameters(profile: profile)
 rescue => e
@@ -19,6 +29,13 @@ if ARGV[1] == 'agents'
   kc.connect_to_agents
 elsif ARGV[1] == 'containers'
   kc.connect_to_containers
+elsif ARGV[1] == 'logs'
+  kc.container_logs(name: ARGV[2])
 else
-  puts "ERROR: Unknown command #{ARGV[1]}"
+  command = ARGV.drop(2)
+  if command.any?
+    kc.connect_to_container(name: ARGV[1], command: command.join(' '))
+  else
+    kc.connect_to_container(name: ARGV[1])
+  end
 end
