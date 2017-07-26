@@ -87,6 +87,7 @@ module KnuckleCluster
 
     def find_container(name:)
       matching = task_containers.select { |task| task[:container_name].include?(name) }
+      puts "\nAttempting to find a container matching '#{name}'..."
 
       if matching.empty?
         puts "No container with a name matching '#{name}' was found"
@@ -102,7 +103,9 @@ module KnuckleCluster
       end
 
       # If there are multiple containers with the same name, choose any one
-      matching.first
+      container = matching.first
+      puts "Found container #{container[:container_name]} on #{container[:agent][:instance_id]}\n\n"
+      container
     end
 
     def run_command_in_container(task:, command:)
