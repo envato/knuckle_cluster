@@ -25,22 +25,12 @@ module KnuckleCluster
     end
 
     def connect_to_agents(command: nil, auto: false)
-      if auto
-        conn_idx = 0
-      else
-        puts "\nListing Agents"
-        tp cluster_agents_with_tasks, :index, :instance_id, :ip, :az, tasks: {display_method: ->(u){u[:tasks].map{|x| x[:definition]}.uniq.join(", ")}, width: 999}
-        puts "\nConnect to which agent?"
-        conn_idx = STDIN.gets.strip.to_i - 1
-      end
-
-      command = generate_connection_string(ip: cluster_agents_with_tasks[conn_idx][:ip], subcommand: command)
+      agent = select_agent(auto: auto)
+      command = generate_connection_string(ip: agent[:ip], subcommand: command)
       system(command)
     end
 
     def connect_to_containers(command: 'bash', auto: false)
-      task_containers
-
       task = select_container(auto: auto)
       subcommand = "#{'sudo ' if sudo}docker exec -it \\`#{'sudo ' if sudo}docker ps \| grep #{task[:task_name]} \| grep #{task[:container_name]} \| awk \'{print \\$1}\'\\` #{command}"
       command = generate_connection_string(ip: task[:agent][:ip], subcommand: subcommand)
@@ -67,6 +57,18 @@ module KnuckleCluster
       @ec2 ||= Aws::EC2::Client.new(aws_client_config)
     end
 
+    def select_agent(auto:)
+      if auto
+        cluster_agents_with_tasks.first
+      else
+        agents = cluster_agents_with_tasks
+        puts "\nListing Agents"
+        tp agents, :index, :instance_id, :ip, :az, tasks: {display_method: ->(u){u[:tasks].map{|x| x[:definition]}.uniq.join(", ")}, width: 999}
+        puts "\nConnect to which agent?"
+        agents[STDIN.gets.strip.to_i - 1]
+      end
+    end
+
     def select_container(auto:)
       if auto
         task_containers.first
@@ -75,10 +77,9 @@ module KnuckleCluster
         puts "\nListing Containers"
         tp containers, :index, {container_name: {width: 999}}, {task_name: {width: 999}}, instance: {display_method: ->(u) {u[:agent][:instance_id]}}
         puts "\nConnect to which container?"
-        conn_idx = STDIN.gets.strip.to_i - 1
+        containers[STDIN.gets.strip.to_i - 1]
       end
     end
-
 
     def aws_client_config
       @aws_client_config ||= { region: region }.tap do |config|
