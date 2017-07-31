@@ -39,6 +39,13 @@ platform:
   ssh_username: ubuntu
   sudo: true
   aws_vault_profile: platform_super_user
+  shortcuts:
+    console:
+      container: web
+      command: bundle exec rails console
+    db:
+      container: worker
+      command: script/db_console
 ```
 
 You can also use inheritance to simplify the inclusion of multiple similar targets:
@@ -70,6 +77,7 @@ knuckle_cluster CLUSTER_PROFILE agents - list all agents and select one to start
 knuckle_cluster CLUSTER_PROFILE containers - list all containers and select one to start a shell
 knuckle_cluster CLUSTER_PROFILE logs CONTAINER_NAME - tail the logs for a container
 knuckle_cluster CLUSTER_PROFILE CONTAINER_NAME [OPTIONAL COMMANDS] - connect to a container and start a shell or run a command
+knuckle_cluster CLUSTER_PROFILE SHORTCUT_NAME - run a shortcut defined in your knuckle_cluster configuration
 ```
 
 ### Rakefile usage
