@@ -13,7 +13,8 @@ module KnuckleCluster
         rsa_key_location: nil,
         ssh_username: 'ec2-user',
         sudo: false,
-        aws_vault_profile: nil)
+        aws_vault_profile: nil,
+        shortcuts: [])
       @cluster_name      = cluster_name
       @region            = region
       @bastion           = bastion
@@ -21,6 +22,7 @@ module KnuckleCluster
       @ssh_username      = ssh_username
       @sudo              = sudo
       @aws_vault_profile = aws_vault_profile
+      @shortcuts         = shortcuts
       self
     end
 
@@ -35,6 +37,13 @@ module KnuckleCluster
     end
 
     def connect_to_container(name:, command: 'bash')
+      if shortcut = shortcuts[name.to_sym]
+        name = shortcut[:container]
+        new_command = shortcut[:command]
+        new_command += " #{command}" unless command == 'bash'
+        command = new_command
+      end
+
       task = find_container(name: name)
       run_command_in_container(task: task, command: command)
     end
@@ -51,7 +60,8 @@ module KnuckleCluster
 
     private
 
-    attr_reader :cluster_name, :region, :bastion, :rsa_key_location, :ssh_username, :sudo, :aws_vault_profile
+    attr_reader :cluster_name, :region, :bastion, :rsa_key_location, :ssh_username,
+                :sudo, :aws_vault_profile, :shortcuts
 
     def ecs
       @ecs ||= Aws::ECS::Client.new(aws_client_config)
