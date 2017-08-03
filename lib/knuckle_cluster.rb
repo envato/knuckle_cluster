@@ -14,7 +14,7 @@ module KnuckleCluster
         ssh_username: 'ec2-user',
         sudo: false,
         aws_vault_profile: nil,
-        shortcuts: [])
+        shortcuts: {})
       @cluster_name      = cluster_name
       @region            = region
       @bastion           = bastion
