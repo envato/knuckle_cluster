@@ -46,6 +46,11 @@ platform:
     db:
       container: worker
       command: script/db_console
+  tunnels:
+    db:
+      local_port: 54321
+      remote_host: postgres-db.yourcompany.com
+      remote_port: 5432
 ```
 
 You can also use inheritance to simplify the inclusion of multiple similar targets:
@@ -78,6 +83,7 @@ knuckle_cluster CLUSTER_PROFILE containers - list all containers and select one 
 knuckle_cluster CLUSTER_PROFILE logs CONTAINER_NAME - tail the logs for a container
 knuckle_cluster CLUSTER_PROFILE CONTAINER_NAME [OPTIONAL COMMANDS] - connect to a container and start a shell or run a command
 knuckle_cluster CLUSTER_PROFILE SHORTCUT_NAME - run a shortcut defined in your knuckle_cluster configuration
+knuckle_cluster CLUSTER_PROFILE tunnel TUNNEL_NAME - open a tunnel defined in your knuckle_cluster configuration
 ```
 
 ### Rakefile usage
