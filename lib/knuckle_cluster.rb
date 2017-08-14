@@ -14,7 +14,8 @@ module KnuckleCluster
         ssh_username: 'ec2-user',
         sudo: false,
         aws_vault_profile: nil,
-        shortcuts: {})
+        shortcuts: {},
+        tunnels: {})
       @cluster_name      = cluster_name
       @region            = region
       @bastion           = bastion
@@ -23,6 +24,7 @@ module KnuckleCluster
       @sudo              = sudo
       @aws_vault_profile = aws_vault_profile
       @shortcuts         = shortcuts
+      @tunnels           = tunnels
       self
     end
 
@@ -54,6 +56,15 @@ module KnuckleCluster
       run_command_in_agent(agent: task[:agent], command: subcommand)
     end
 
+    def open_tunnel(name:)
+      if tunnel = tunnels[name.to_sym]
+        agent = select_agent(auto: true)
+        open_tunnel_via_agent(tunnel.merge(agent: agent))
+      else
+        puts "ERROR: A tunnel configuration was not found for '#{name}'"
+      end
+    end
+
     def reload!
       @ecs = @ec2 = @tasks = nil
     end
@@ -61,7 +72,7 @@ module KnuckleCluster
     private
 
     attr_reader :cluster_name, :region, :bastion, :rsa_key_location, :ssh_username,
-                :sudo, :aws_vault_profile, :shortcuts
+                :sudo, :aws_vault_profile, :shortcuts, :tunnels
 
     def ecs
       @ecs ||= Aws::ECS::Client.new(aws_client_config)
@@ -128,6 +139,20 @@ module KnuckleCluster
       system(command)
     end
 
+    def open_tunnel_via_agent(agent:, local_port:, remote_host:, remote_port:)
+      command = generate_connection_string(
+        ip: agent[:ip],
+        port_forward: "#{local_port}:#{remote_host}:#{remote_port}",
+        subcommand: <<~SCRIPT
+          echo ""
+          echo "localhost:#{local_port} is now tunneled to #{remote_host}:#{remote_port}"
+          echo "Press Enter to close the tunnel once you are finished."
+          read
+        SCRIPT
+      )
+      system(command)
+    end
+
     def aws_client_config
       @aws_client_config ||= { region: region }.tap do |config|
         config.merge!(aws_vault_credentials) if aws_vault_profile
@@ -144,10 +169,11 @@ module KnuckleCluster
       end
     end
 
-    def generate_connection_string(ip:, subcommand: nil)
+    def generate_connection_string(ip:, subcommand: nil, port_forward: nil)
       command = "ssh #{ip} -l#{ssh_username}"
       command += " -i #{rsa_key_location}" if rsa_key_location
       command += " -o ProxyCommand='ssh -qxT #{bastion} nc #{ip} 22'" if bastion
+      command += " -L #{port_forward}" if port_forward
       command += " -t \"#{subcommand}\"" if subcommand
       command
     end

@@ -11,6 +11,7 @@ if ARGV.count < 2
     knuckle_cluster CLUSTER_PROFILE logs CONTAINER_NAME - tail the logs for a container
     knuckle_cluster CLUSTER_PROFILE CONTAINER_NAME [OPTIONAL COMMANDS] - connect to a container and start a shell or run a command
     knuckle_cluster CLUSTER_PROFILE SHORTCUT_NAME - run a shortcut defined in your knuckle_cluster configuration
+    knuckle_cluster CLUSTER_PROFILE tunnel TUNNEL_NAME - open a tunnel defined in your knuckle_cluster configuration
   USAGE
   exit
 end
@@ -32,6 +33,8 @@ elsif ARGV[1] == 'containers'
   kc.connect_to_containers
 elsif ARGV[1] == 'logs'
   kc.container_logs(name: ARGV[2])
+elsif ARGV[1] == 'tunnel'
+  kc.open_tunnel(name: ARGV[2])
 else
   command = ARGV.drop(2)
   if command.any?
