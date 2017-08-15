@@ -17,7 +17,7 @@ if ARGV.count < 2
 end
 
 begin
-  config = KnuckleCluster::Configuration.load_parameters(profile: profile)
+  config = KnuckleCluster::Configuration.load_parameters(root_profile_name: profile)
 rescue => e
   puts "ERROR: There was a problem loading your configuration: #{e}"
   exit
