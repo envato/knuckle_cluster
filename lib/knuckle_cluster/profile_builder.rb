@@ -1,14 +1,16 @@
 require_relative 'profile'
+require_relative 'profiles_validator'
 
 class ProfileBuilder
 
-  def initialize(profiles_hash, root_profile_name)
+  def initialize(profiles_file, root_profile_name)
     @root_profile_name = root_profile_name
-    @profiles_hash = profiles_hash
+    @profiles_file = profiles_file
   end
 
   def build
-    @profiles = build_profiles
+    ProfilesValidator.new(@profiles_file, @root_profile_name).validate
+    build_profiles
     attach_parents
     find_profile(@root_profile_name)
   end
@@ -16,7 +18,7 @@ class ProfileBuilder
   private
 
   def build_profiles
-    @profiles_hash.map {|key, value| Profile.new(key.to_s, value)}
+    @profiles = @profiles_file.map {|name, file_parameters| Profile.new(name.to_s, file_parameters)}
   end
 
   def attach_parents

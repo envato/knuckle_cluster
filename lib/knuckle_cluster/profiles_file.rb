@@ -1,5 +1,6 @@
 require 'yaml'
 require_relative '../../lib/core_extenstions/hash'
+require_relative 'profiles_file_validator'
 
 class ProfilesFile
 
@@ -12,7 +13,7 @@ class ProfilesFile
   end
 
   def load
-    raise "File #{@profiles_file_name} not found" unless File.exists?(@profiles_file_name)
+    ProfilesFileValidator.new(@profiles_file_name).validate
     YAML.load_file(@profiles_file_name).symbolize_keys
   end
 

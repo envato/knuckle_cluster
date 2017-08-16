@@ -1,7 +1,7 @@
 class ProfilesValidator
 
-  def initialize(profiles_hash, root_profile_name)
-    @profiles_hash = profiles_hash
+  def initialize(profiles_file, root_profile_name)
+    @profiles_file = profiles_file
     @root_profile_name = root_profile_name
   end
 
@@ -29,11 +29,11 @@ class ProfilesValidator
   end
 
   def has_profile?(profile_name)
-    @profiles_hash[:"#{profile_name}"]
+    @profiles_file[:"#{profile_name}"]
   end
 
   def parent_profile_names
-    @profiles_hash.map {|_, profile| profile[:profile]}.compact
+    @profiles_file.map {|_, profile| profile[:profile]}.compact
   end
 
 end

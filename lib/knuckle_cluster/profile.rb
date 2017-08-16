@@ -3,12 +3,12 @@ class Profile
   PARENT_KEY = :profile
 
   attr_accessor :parent
-  attr_reader :name, :parent_name, :data
+  attr_reader :name, :parent_name
 
-  def initialize(name, raw_profile_record)
+  def initialize(name, file_parameters)
     @name = name
-    @parent_name = raw_profile_record[PARENT_KEY]
-    @data = create_profile_data(raw_profile_record)
+    @parent_name = file_parameters[PARENT_KEY]
+    @parameters = create_parameters(file_parameters)
   end
 
   def has_parent?
@@ -16,23 +16,23 @@ class Profile
   end
 
   def parameters
-    merge_parent_data
+    merge_parent_parameters
   end
 
   protected
 
-  def merge_parent_data(child_data={})
-    merged_data = @data.clone.merge(child_data)
-    return merged_data unless has_parent?
-    parent.merge_parent_data(merged_data)
+  def merge_parent_parameters(child_parameters={})
+    merged_parameters = @parameters.clone.merge(child_parameters)
+    return merged_parameters unless has_parent?
+    parent.merge_parent_parameters(merged_parameters)
   end
 
   private
 
-  def create_profile_data(raw_profile_record)
-    data_clone = raw_profile_record.clone
-    data_clone.delete(PARENT_KEY)
-    data_clone
+  def create_parameters(file_parameters)
+    parameters = file_parameters.clone
+    parameters.delete(PARENT_KEY)
+    parameters
   end
 
 end
