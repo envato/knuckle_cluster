@@ -43,11 +43,11 @@ class KnuckleCluster::Configuration
 
   def self.cleanup_hash(output)
     output.delete('profile')
-    keys_to_symbols(output)
+    shallow_keys_to_symbols(output)
   end
 
 
-  def self.keys_to_symbols(hash)
+  def self.shallow_keys_to_symbols(hash)
     hash.keys.each do |key|
       hash[key.to_sym] = hash.delete(key)
     end
