@@ -43,17 +43,9 @@ class KnuckleCluster::Configuration
 
 
   def self.keys_to_symbols(data)
-    #Implemented here - beats including activesupport
-    return data unless Hash === data
-    ret = {}
-    data.each do |k,v|
-      if Hash === v
-        #Look, doesnt need to be recursive but WHY NOT?!?
-        ret[k.to_sym] = keys_to_symbols(v)
-      else
-        ret[k.to_sym] = v
-      end
+    data.keys.each do |key|
+      data[key.to_sym] = data.delete(key)
     end
-    ret
+    data
   end
 end
