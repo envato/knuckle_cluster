@@ -25,7 +25,12 @@ class KnuckleCluster::Configuration
 
   def self.find_profile_inheritance_chain(starting_profile, profiles)
     return nil unless profiles.keys.include?(starting_profile)
-    return [starting_profile, find_profile_inheritance_chain(profiles[starting_profile]['profile'], profiles)].flatten
+    return [
+              starting_profile, 
+              find_profile_inheritance_chain(
+                profiles[starting_profile]['profile'], profiles
+              )
+           ].flatten
   end
 
   def self.resolve_inheritance(profile_inheritance_chain, profile_data)
