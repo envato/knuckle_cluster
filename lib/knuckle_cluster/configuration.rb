@@ -47,10 +47,10 @@ class KnuckleCluster::Configuration
   end
 
 
-  def self.keys_to_symbols(data)
-    data.keys.each do |key|
-      data[key.to_sym] = data.delete(key)
+  def self.keys_to_symbols(hash)
+    hash.keys.each do |key|
+      hash[key.to_sym] = hash.delete(key)
     end
-    data
+    hash
   end
 end
