@@ -2,7 +2,7 @@
 require "knuckle_cluster"
 require "yaml"
 
-profile = ARGV[0]
+profile_name = ARGV[0]
 
 if ARGV.count < 2
   puts <<~USAGE
@@ -17,7 +17,7 @@ if ARGV.count < 2
 end
 
 begin
-  config = KnuckleCluster::Configuration.load_parameters(profile: profile)
+  config = KnuckleCluster::Configuration.load_parameters(profile_name: profile_name)
 rescue => e
   puts "ERROR: There was a problem loading your configuration: #{e}"
   exit
