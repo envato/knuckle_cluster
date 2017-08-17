@@ -39,7 +39,6 @@ class KnuckleCluster::Configuration
     while(current_profile_data.keys.include?('profile'))
       next_profile_name = current_profile_data['profile']
       break if profile_inheritance.include? next_profile_name #prevent infinite loops
-
       profile_inheritance << next_profile_name
 
       if profile_data[next_profile_name]
@@ -48,7 +47,6 @@ class KnuckleCluster::Configuration
         raise "Cannot find profile data with name #{next_profile_name}"
       end
     end
-
     profile_inheritance.reverse
   end
 
@@ -57,9 +55,7 @@ class KnuckleCluster::Configuration
     profile_inheritance.each do |prof|
       output.merge!(profile_data[prof] || {})
     end
-
     output.delete('profile')
-
     keys_to_symbols(output)
   end
 
