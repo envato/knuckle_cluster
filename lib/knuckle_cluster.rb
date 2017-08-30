@@ -52,7 +52,7 @@ module KnuckleCluster
 
     def container_logs(name:)
       task = find_container(name: name)
-      subcommand = "#{'sudo ' if sudo}docker logs -f \\`#{'sudo ' if sudo}docker ps \| grep #{task[:task_name]} \| grep #{task[:container_name]} \| awk \'{print \\$1}\'\\`"
+      subcommand = "#{'sudo ' if sudo}docker logs -f \\`#{get_container_id_command(task[:container_name])}\\`"
       run_command_in_agent(agent: task[:agent], command: subcommand)
     end
 
@@ -130,8 +130,12 @@ module KnuckleCluster
     end
 
     def run_command_in_container(task:, command:)
-      subcommand = "#{'sudo ' if sudo}docker exec -it \\`#{'sudo ' if sudo}docker ps \| grep #{task[:task_name]} \| grep #{task[:container_name]} \| awk \'{print \\$1}\'\\` #{command}"
+      subcommand = "#{'sudo ' if sudo}docker exec -it \\`#{get_container_id_command(task[:container_name])}\\` #{command}"
       run_command_in_agent(agent: task[:agent], command: subcommand)
+    end
+
+    def get_container_id_command(container_name)
+      "#{'sudo ' if sudo}docker ps --filter 'label=com.amazonaws.ecs.container-name=#{container_name}' | tail -1 | awk '{print \\$1}'"
     end
 
     def run_command_in_agent(agent:, command:)
