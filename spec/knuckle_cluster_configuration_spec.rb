@@ -7,7 +7,7 @@ RSpec.describe KnuckleCluster::Configuration do
 
   it "generates correct output using inheritance" do
     expect(
-      KnuckleCluster::Configuration.load_parameters(profile: profile, profile_file: file)
+      KnuckleCluster::Configuration.load_parameters(root_profile_name: profile, profiles_file_name: file)
     ).to eq(
       {
         cluster_name: 'pohos_super_cluster',
