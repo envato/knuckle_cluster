@@ -1,9 +1,29 @@
 # KnuckleCluster
 
 Have you ever wanted to shuck away the hard, rough exterior of an ECS cluster and get to the soft, chewy innards? Sounds like you need KnuckleCluster!
-This tool provides scripts (usually invoked via rakefile) to list and connect to (and optionally run commands on) ecs agents and containers via ssh.
+This tool provides scripts, invoked via cli or rakefile, to list, connect to and/or run commands on ecs agents and containers via ssh.  This makes it very easy to interrogate ECS agents and containers without having to go digging for IP addresses and things.
+
+## Features
+* See what agents in your ECS cluster are doing
+* Easily connect to running agents
+* Easily connect and get a console inside running containers
+* Create shortcuts to oft-used commands and run them easily
+* Optionally integrates with [aws-vault](https://github.com/99designs/aws-vault) for AWS authentication
+
+## Development Status
+Is being used in production for various projects and is considered stable. Any new features/bug fixes etc are most welcome!  Test coverage is minimal...
 
 ## Installation
+
+KnuckleCluster can be used in two ways:
+1.  As a system-wide executable with a config file (preferred)
+1.  As a rake task in your project
+
+Install the executable with:
+
+    $ gem install knuckle_cluster
+
+OR
 
 Add this line to your application's Gemfile:
 
@@ -17,9 +37,6 @@ And then execute:
 
     $ bundle
 
-Or install it yourself as:
-
-    $ gem install knuckle_cluster
 
 ## Usage
 
@@ -167,3 +184,31 @@ ssh_username | The username to conncet. Will default to `ec2-user`
 sudo | true or false - will sudo the `docker` command on the target machine. Usually not needed unless the user is not a part of the `docker` group.
 aws_vault_profile | If you use the `aws-vault` tool to manage your AWS credentials, you can specify a profile here that will be automatically used to connect to this cluster.
 profile | Another profile to inherit settings from. Settings from lower profiles can be overridden in higher ones.
+
+
+## Maintainers
+- [Peter Hofmann](https://github.com/envatopoho)
+- [Giancarlo Salamanca](https://github.com/salamagd)
+
+## License
+
+`KnuckleCluster` uses MIT license. See
+[`LICENSE.txt`](https://github.com/envato/knuckle_cluster/blob/master/LICENSE.txt) for
+details.
+
+## Code of conduct
+
+We welcome contribution from everyone. Read more about it in
+[`CODE_OF_CONDUCT.md`](https://github.com/envato/knuckle_cluster/blob/master/CODE_OF_CONDUCT.md)
+
+## Contributing
+
+For bug fixes, documentation changes, and small features:
+
+1. Fork it ( https://github.com/[my-github-username]/knuckle_cluster/fork )
+2. Create your feature branch (git checkout -b my-new-feature)
+3. Commit your changes (git commit -am 'Add some feature')
+4. Push to the branch (git push origin my-new-feature)
+5. Create a new Pull Request
+
+For larger new features: Do everything as above, but first also make contact with the project maintainers to be sure your change fits with the project direction and you won't be wasting effort going in the wrong direction.
