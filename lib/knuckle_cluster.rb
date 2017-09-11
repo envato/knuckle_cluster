@@ -103,11 +103,11 @@ module KnuckleCluster
               }
             else
               display_data << {
-                index: '',
+                index:       '',
                 instance_id: '',
-                ip: '',
-                az: '',
-                task: task
+                ip:          '',
+                az:          '',
+                task:        task
               }
             end
           end
