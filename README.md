@@ -149,9 +149,10 @@ kc.connect_to_agents
 ```
 ```
 Listing Agents
-INDEX | INSTANCE_ID         | IP           | AZ              | TASKS
+INDEX | INSTANCE_ID         | IP           | AZ              | TASK
 ------|---------------------|--------------|-----------------|------------------------
-1     | i-0ecf93dcae4a54725 | 10.97.96.141 | ap-southeast-2a | container_1_name, container_2_name
+1     | i-0ecf93dcae4a54725 | 10.97.96.141 | ap-southeast-2a | container_1_name
+      |                     |              |                 | container_2_name
 
 Connect to which agent?
 ```

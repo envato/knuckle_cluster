@@ -86,9 +86,35 @@ module KnuckleCluster
       if auto
         cluster_agents_with_tasks.first
       else
+
         agents = cluster_agents_with_tasks
+
+        display_data = []
+        agents.each_with_index do |agent, agent_idx|
+          unique_task_names = agent[:tasks].map{|x| x[:definition]}.uniq
+          unique_task_names.each_with_index do |task, idx|
+            if idx == 0
+              display_data << {
+                index:       agent_idx+1,
+                instance_id: agent[:instance_id],
+                ip:          agent[:ip],
+                az:          agent[:az],
+                task:        task,
+              }
+            else
+              display_data << {
+                index: '',
+                instance_id: '',
+                ip: '',
+                az: '',
+                task: task
+              }
+            end
+          end
+        end
+
         puts "\nListing Agents"
-        tp agents, :index, :instance_id, :ip, :az, tasks: {display_method: ->(u){u[:tasks].map{|x| x[:definition]}.uniq.join(", ")}, width: 999}
+        tp display_data, :index, :instance_id, :ip, :az, task: {width: 999}
         puts "\nConnect to which agent?"
         agents[STDIN.gets.strip.to_i - 1]
       end
