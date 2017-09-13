@@ -69,10 +69,6 @@ module KnuckleCluster
       end
     end
 
-    def reload!
-      @ecs = @ec2 = @tasks = nil
-    end
-
     private
 
     attr_reader :cluster_name, :region, :bastion, :rsa_key_location, :ssh_username,
