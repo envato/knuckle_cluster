@@ -3,10 +3,13 @@ require "knuckle_cluster/version"
 require "knuckle_cluster/configuration"
 
 require 'aws-sdk'
+require 'forwardable'
 require 'table_print'
 
 module KnuckleCluster
   class << self
+    extend Forwardable
+
     def new(
         cluster_name:,
         region: 'us-east-1',
@@ -35,8 +38,8 @@ module KnuckleCluster
     end
 
     def connect_to_containers(command: 'bash', auto: false)
-      task = select_container(auto: auto)
-      run_command_in_container(task: task, command: command)
+      container = select_container(auto: auto)
+      run_command_in_container(container: container, command: command)
     end
 
     def connect_to_container(name:, command: 'bash')
@@ -47,14 +50,14 @@ module KnuckleCluster
         command = new_command
       end
 
-      task = find_container(name: name)
-      run_command_in_container(task: task, command: command)
+      container = find_container(name: name)
+      run_command_in_container(container: container, command: command)
     end
 
     def container_logs(name:)
-      task = find_container(name: name)
-      subcommand = "#{'sudo ' if sudo}docker logs -f \\`#{get_container_id_command(task.container_name)}\\`"
-      run_command_in_agent(agent: task.agent, command: subcommand)
+      container = find_container(name: name)
+      subcommand = "#{'sudo ' if sudo}docker logs -f \\`#{get_container_id_command(container.name)}\\`"
+      run_command_in_agent(agent: container.task.agent, command: subcommand)
     end
 
     def open_tunnel(name:)
@@ -86,7 +89,8 @@ module KnuckleCluster
          :public_ip,
          :private_ip,
          :availability_zone,
-         task: { display_method: 'tasks.task_name' }
+         { task: { display_method: 'tasks.name', width: 999 } },
+         { container: { display_method: 'tasks.containers.name', width: 999 } }
 
       puts "\nConnect to which agent?"
       agents[STDIN.gets.strip.to_i - 1]
@@ -97,18 +101,18 @@ module KnuckleCluster
 
       puts "\nListing Containers"
 
-      tp containers,
-         :index,
-         { container_name: { width: 999 } },
-         { task_name: { width: 999 } },
-         agent: { display_method: 'agent.instance_id' }
+      tp tasks,
+         { task: { display_method: :name, width: 999 } },
+         { agent: { display_method: 'agent.instance_id' } },
+         { index: { display_method: 'containers.index' } },
+         { container: { display_method: 'containers.name', width: 999 } }
 
       puts "\nConnect to which container?"
       containers[STDIN.gets.strip.to_i - 1]
     end
 
     def find_container(name:)
-      matching = agent_registry.tasks.select { |task| task.container_name.include?(name) }
+      matching = containers.select { |container| container.name.include?(name) }
       puts "\nAttempting to find a container matching '#{name}'..."
 
       if matching.empty?
@@ -116,7 +120,7 @@ module KnuckleCluster
         Process.exit
       end
 
-      unique_names = matching.map { |task| task.container_name }.uniq
+      unique_names = matching.map(&:name).uniq
 
       if unique_names.uniq.count > 1
         puts "Containers with the following names were found, please be more specific:"
@@ -126,13 +130,13 @@ module KnuckleCluster
 
       # If there are multiple containers with the same name, choose any one
       container = matching.first
-      puts "Found container #{container.container_name} on #{container.agent.instance_id}\n\n"
+      puts "Found container #{container.name} on #{container.task.agent.instance_id}\n\n"
       container
     end
 
-    def run_command_in_container(task:, command:)
-      subcommand = "#{'sudo ' if sudo}docker exec -it \\`#{get_container_id_command(task.container_name)}\\` #{command}"
-      run_command_in_agent(agent: task.agent, command: subcommand)
+    def run_command_in_container(container:, command:)
+      subcommand = "#{'sudo ' if sudo}docker exec -it \\`#{get_container_id_command(container.name)}\\` #{command}"
+      run_command_in_agent(agent: container.task.agent, command: subcommand)
     end
 
     def get_container_id_command(container_name)
@@ -191,12 +195,6 @@ module KnuckleCluster
       )
     end
 
-    def agents
-      agent_registry.agents
-    end
-
-    def containers
-      agent_registry.tasks
-    end
+    def_delegators :agent_registry, :agents, :tasks, :containers
   end
 end

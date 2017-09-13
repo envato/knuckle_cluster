@@ -1,23 +1,25 @@
 module KnuckleCluster
   class Task
     def initialize(
-      index:,
       arn:,
       container_instance_arn:,
       agent:,
       definition:,
-      task_name:,
-      container_name:
+      name:,
+      task_registry:
     )
-      @index = index
       @arn = arn
       @container_instance_arn = container_instance_arn
       @agent = agent
       @definition = definition
-      @task_name = task_name
-      @container_name = container_name
+      @name = name
+      @task_registry = task_registry
     end
 
-    attr_reader :index, :arn, :container_instance_arn, :agent, :definition, :task_name, :container_name
+    attr_reader :arn, :container_instance_arn, :agent, :definition, :name, :task_registry
+
+    def containers
+      task_registry.containers_where(task: self)
+    end
   end
 end

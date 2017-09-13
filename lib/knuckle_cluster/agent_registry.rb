@@ -1,8 +1,12 @@
 require 'knuckle_cluster/agent'
 require 'knuckle_cluster/task_registry'
 
+require 'forwardable'
+
 module KnuckleCluster
   class AgentRegistry
+    extend Forwardable
+
     def initialize(aws_client_config:, cluster_name:)
       @aws_client_config = aws_client_config
       @cluster_name = cluster_name
@@ -12,13 +16,11 @@ module KnuckleCluster
       @agents ||= load_agents
     end
 
-    def tasks
-      task_registry.tasks
-    end
-
     def find_by(container_instance_arn:)
       agents_by_container_instance_arn[container_instance_arn]&.first
     end
+
+    def_delegators :task_registry, :tasks, :containers
 
     private
 
@@ -43,7 +45,7 @@ module KnuckleCluster
           instance_id:            instance[:instance_id],
           public_ip:              instance[:public_ip_address],
           private_ip:             instance[:private_ip_address],
-          availability_zone:      instance[:placement][:availability_zone],
+          availability_zone:      instance.dig(:placement, :availability_zone),
           container_instance_arn: ecs_instances_by_id[instance[:instance_id]].first.container_instance_arn,
           task_registry:          task_registry,
         )
