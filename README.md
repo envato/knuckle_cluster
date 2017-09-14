@@ -135,10 +135,14 @@ $ kc.connect_to_containers
 Which will give you the output and run bash for you on the actual docker container:
 ```
 Listing Containers
-INDEX | NAME             | INSTANCE
-------|------------------|--------------------
-1     | container_1_name | i-062bfd0a0fa574d3d
-2     | container_2_name | i-062bfd0a0fa574d3d
+TASK              | AGENT               | INDEX | CONTAINER
+------------------|---------------------|-------|--------------------
+task-one          | i-123abc123abc123ab | 1     | t1-container-one
+task-two          | i-123abc123abc123ab | 2     | t2-container-one
+                  |                     | 3     | t2-container-two
+task-three        | i-456def456def456de | 4     | t3-container-one
+                  |                     | 5     | t3-container-two
+                  |                     | 6     | t3-container-three
 
 Connect to which container?
 ```
@@ -149,9 +153,14 @@ kc.connect_to_agents
 ```
 ```
 Listing Agents
-INDEX | INSTANCE_ID         | IP           | AZ              | TASKS
-------|---------------------|--------------|-----------------|------------------------
-1     | i-0ecf93dcae4a54725 | 10.97.96.141 | ap-southeast-2a | container_1_name, container_2_name
+INDEX | INSTANCE_ID         | PUBLIC_IP | PRIVATE_IP  | AVAILABILITY_ZONE | TASK       | CONTAINER
+------|---------------------|-----------|-------------|-------------------|------------|--------------------
+1     | i-123abc123abc123ab | 1.2.3.4   | 10.200.0.10 | us-east-1a        | task-one   | t1-container-one
+      |                     |           |             |                   | task-two   | t2-container-one
+      |                     |           |             |                   |            | t2-container-two
+2     | i-456def456def456de | 1.2.3.5   | 10.200.0.20 | us-east-1b        | task-three | t3-container-one
+      |                     |           |             |                   |            | t3-container-two
+      |                     |           |             |                   |            | t3-container-three
 
 Connect to which agent?
 ```
