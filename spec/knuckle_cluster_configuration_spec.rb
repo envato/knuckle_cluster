@@ -3,11 +3,11 @@ require "spec_helper"
 RSpec.describe KnuckleCluster::Configuration do
 
   let(:file)    { File.join(File.dirname(__FILE__), 'fixtures', 'test_data')}
-  let(:profile) { 'platform' }
+  let(:profile_name) { 'platform' }
 
   it "generates correct output using inheritance" do
     expect(
-      KnuckleCluster::Configuration.load_parameters(profile: profile, profile_file: file)
+      KnuckleCluster::Configuration.load_parameters(profile_name: profile_name, profile_file: file)
     ).to eq(
       {
         cluster_name: 'pohos_super_cluster',
