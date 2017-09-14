@@ -82,9 +82,9 @@ module KnuckleCluster
       tp agents,
          :index,
          :instance_id,
-         :public_ip,
-         :private_ip,
-         :availability_zone,
+         # :public_ip,
+         # :private_ip,
+         # :availability_zone,
          { task: { display_method: 'tasks.name', width: 999 } },
          { container: { display_method: 'tasks.containers.name', width: 999 } }
 
