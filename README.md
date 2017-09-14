@@ -73,15 +73,15 @@ platform:
 You can also use inheritance to simplify the inclusion of multiple similar targets:
 ```
 super_platform:
+  <<: *default_platform
   cluster_name: super-platform-ecs-cluster-ABC123
-  profile: default_platform
 
 ultra_platform:
+  <<: *default_platform
   cluster_name: ultra-platform-ecs-cluster-DEF987
-  profile: default_platform
   sudo: false
 
-default_platform:
+default_platform: &default_platform
   region: us-east-1
   bastion: platform_bastion
   rsa_key_location: ~/.ssh/platform_rsa_key
