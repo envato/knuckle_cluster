@@ -195,9 +195,13 @@ aws_vault_profile | If you use the `aws-vault` tool to manage your AWS credentia
 profile | Another profile to inherit settings from. Settings from lower profiles can be overridden in higher ones.
 
 
-## Maintainers
+## Maintainer
+[Envato](https://github.com/envato)
+
+## Contributors
 - [Peter Hofmann](https://github.com/envatopoho)
 - [Giancarlo Salamanca](https://github.com/salamagd)
+- [Jiexin Huang](https://github.com/jiexinhuang)
 
 ## License
 
