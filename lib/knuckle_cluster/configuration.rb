@@ -12,19 +12,15 @@ class KnuckleCluster::Configuration
       raise "Config file does not include profile for #{profile}"
     end
 
-    #Figure out all the profiles to inherit from
-    tmp_data = data[profile]
-    profile_inheritance = [profile]
-    while(tmp_data && tmp_data.keys.include?('profile'))
-      profile_name = tmp_data['profile']
-      break if profile_inheritance.include? profile_name
-      profile_inheritance << profile_name
-      tmp_data = data[profile_name]
-    end
+    profile_inheritance = profile_hierarchy(
+      child_profile_name: profile,
+      data: data,
+      profile_inheritance: [profile]
+    )
 
     #Starting at the very lowest profile, build an options hash
     output = {}
-    profile_inheritance.reverse.each do |prof|
+    profile_inheritance.each do |prof|
       output.merge!(data[prof] || {})
     end
 
@@ -34,6 +30,24 @@ class KnuckleCluster::Configuration
   end
 
   private
+
+  def self.profile_hierarchy(child_profile_name:, data:, profile_inheritance:)
+    child_profile = data[child_profile_name]
+    if child_profile.nil?
+      return profile_inheritance
+    end
+
+    parent_profile = child_profile['profile']
+    if parent_profile.nil? || profile_inheritance.include?(parent_profile)
+      return profile_inheritance
+    end
+
+    profile_hierarchy(
+      child_profile_name: parent_profile,
+      data: data,
+      profile_inheritance: profile_inheritance.insert(0, parent_profile)
+    )
+  end
 
   def self.keys_to_symbols(data)
     #Implemented here - beats including activesupport
