@@ -73,15 +73,15 @@ platform:
 You can also use inheritance to simplify the inclusion of multiple similar targets:
 ```
 super_platform:
+  <<: *default_platform
   cluster_name: super-platform-ecs-cluster-ABC123
-  profile: default_platform
 
 ultra_platform:
+  <<: *default_platform
   cluster_name: ultra-platform-ecs-cluster-DEF987
-  profile: default_platform
   sudo: false
 
-default_platform:
+default_platform: &default_platform
   region: us-east-1
   bastion: platform_bastion
   rsa_key_location: ~/.ssh/platform_rsa_key
@@ -130,7 +130,7 @@ invoke with `rake agents` or `rake containers`
 
 Once you have an instance of KnuckleCluster, you can now do things!
 ```
-$ kc.connect_to_containers
+$ knuckle_cluster super_platform containers
 ```
 Which will give you the output and run bash for you on the actual docker container:
 ```
@@ -149,18 +149,18 @@ Connect to which container?
 
 Same with connecting directly to agents
 ```
-kc.connect_to_agents
+$ knuckle_cluster super_platform agents
 ```
 ```
 Listing Agents
-INDEX | INSTANCE_ID         | PUBLIC_IP | PRIVATE_IP  | AVAILABILITY_ZONE | TASK       | CONTAINER
-------|---------------------|-----------|-------------|-------------------|------------|--------------------
-1     | i-123abc123abc123ab | 1.2.3.4   | 10.200.0.10 | us-east-1a        | task-one   | t1-container-one
-      |                     |           |             |                   | task-two   | t2-container-one
-      |                     |           |             |                   |            | t2-container-two
-2     | i-456def456def456de | 1.2.3.5   | 10.200.0.20 | us-east-1b        | task-three | t3-container-one
-      |                     |           |             |                   |            | t3-container-two
-      |                     |           |             |                   |            | t3-container-three
+INDEX | INSTANCE_ID         | TASK       | CONTAINER
+------|---------------------|------------|--------------------
+1     | i-123abc123abc123ab | task-one   | t1-container-one
+      |                     | task-two   | t2-container-one
+      |                     |            | t2-container-two
+2     | i-456def456def456de | task-three | t3-container-one
+      |                     |            | t3-container-two
+      |                     |            | t3-container-three
 
 Connect to which agent?
 ```
@@ -195,9 +195,13 @@ aws_vault_profile | If you use the `aws-vault` tool to manage your AWS credentia
 profile | Another profile to inherit settings from. Settings from lower profiles can be overridden in higher ones.
 
 
-## Maintainers
+## Maintainer
+[Envato](https://github.com/envato)
+
+## Contributors
 - [Peter Hofmann](https://github.com/envatopoho)
 - [Giancarlo Salamanca](https://github.com/salamagd)
+- [Jiexin Huang](https://github.com/jiexinhuang)
 
 ## License
 

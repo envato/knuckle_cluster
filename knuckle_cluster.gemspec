@@ -6,11 +6,11 @@ require 'knuckle_cluster/version'
 Gem::Specification.new do |spec|
   spec.name          = "knuckle_cluster"
   spec.version       = KnuckleCluster::VERSION
-  spec.authors       = ["Peter Hofmann", "Giancarlo Salamanca"]
-  spec.email         = ["peter.hofmann@envato.com"]
+  spec.authors       = ["Envato"]
+  spec.email         = ["rubygems@envato.com"]
 
   spec.summary       = %q{Handy cluster tool}
-  spec.description   = %q{Ever wanted to shuck away the hard, rough exterior of an ECS cluster and get to the soft, chewy innards? Sounds like you need KnuckleCluster!}
+  spec.description   = %q{Interrogation of AWS ECS clusters, with the ability to directly connect to hosts and containers.}
   spec.homepage      = "https://github.com/envato/knuckle_cluster"
   spec.license       = "MIT"
 
