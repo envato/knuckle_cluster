@@ -185,18 +185,19 @@ module KnuckleCluster
     end
 
     def agent_registry
-      @agent_registry ||= ()
-      if @cluster_name
-        EcsAgentRegistry.new(
-          aws_client_config: aws_client_config,
-          cluster_name:      cluster_name,
-        )
-      elsif @spot_request_id
-        SpotRequestInstanceRegistry.new(
-          aws_client_config: aws_client_config,
-          spot_request_id:   spot_request_id,
-        )
-      end
+      @agent_registry ||= (
+        if @cluster_name
+          EcsAgentRegistry.new(
+            aws_client_config: aws_client_config,
+            cluster_name:      cluster_name,
+          )
+        elsif @spot_request_id
+          SpotRequestInstanceRegistry.new(
+            aws_client_config: aws_client_config,
+            spot_request_id:   spot_request_id,
+          )
+        end
+      )
     end
 
     def_delegators :agent_registry, :agents, :tasks, :containers, :output_agents
