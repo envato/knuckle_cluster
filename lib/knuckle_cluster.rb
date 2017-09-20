@@ -1,4 +1,5 @@
-require 'knuckle_cluster/agent_registry'
+require 'knuckle_cluster/ecs_agent_registry'
+require 'knuckle_cluster/spot_request_instance_registry'
 require "knuckle_cluster/version"
 require "knuckle_cluster/configuration"
 
@@ -11,7 +12,8 @@ module KnuckleCluster
     extend Forwardable
 
     def new(
-        cluster_name:,
+        cluster_name: nil,
+        spot_request_id: nil,
         region: 'us-east-1',
         bastion: nil,
         rsa_key_location: nil,
@@ -21,6 +23,7 @@ module KnuckleCluster
         shortcuts: {},
         tunnels: {})
       @cluster_name      = cluster_name
+      @spot_request_id   = spot_request_id
       @region            = region
       @bastion           = bastion
       @rsa_key_location  = rsa_key_location
@@ -29,6 +32,10 @@ module KnuckleCluster
       @aws_vault_profile = aws_vault_profile
       @shortcuts         = shortcuts
       @tunnels           = tunnels
+
+      if @cluster_name.nil? && @spot_request_id.nil?
+        raise "Must specify either cluster_name or spot_request_id"
+      end
       self
     end
 
@@ -71,7 +78,7 @@ module KnuckleCluster
 
     private
 
-    attr_reader :cluster_name, :region, :bastion, :rsa_key_location, :ssh_username,
+    attr_reader :cluster_name, :spot_request_id, :region, :bastion, :rsa_key_location, :ssh_username,
                 :sudo, :aws_vault_profile, :shortcuts, :tunnels
 
     def select_agent(auto:)
@@ -79,14 +86,7 @@ module KnuckleCluster
 
       puts "\nListing Agents"
 
-      tp agents,
-         :index,
-         :instance_id,
-         # :public_ip,
-         # :private_ip,
-         # :availability_zone,
-         { task: { display_method: 'tasks.name', width: 999 } },
-         { container: { display_method: 'tasks.containers.name', width: 999 } }
+      output_agents
 
       puts "\nConnect to which agent?"
       agents[STDIN.gets.strip.to_i - 1]
@@ -185,12 +185,20 @@ module KnuckleCluster
     end
 
     def agent_registry
-      @agent_registry ||= AgentRegistry.new(
-        aws_client_config: aws_client_config,
-        cluster_name:      cluster_name,
-      )
+      @agent_registry ||= ()
+      if @cluster_name
+        EcsAgentRegistry.new(
+          aws_client_config: aws_client_config,
+          cluster_name:      cluster_name,
+        )
+      elsif @spot_request_id
+        SpotRequestInstanceRegistry.new(
+          aws_client_config: aws_client_config,
+          spot_request_id:   spot_request_id,
+        )
+      end
     end
 
-    def_delegators :agent_registry, :agents, :tasks, :containers
+    def_delegators :agent_registry, :agents, :tasks, :containers, :output_agents
   end
 end
