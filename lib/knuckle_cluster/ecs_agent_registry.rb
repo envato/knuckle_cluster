@@ -4,7 +4,7 @@ require 'knuckle_cluster/task_registry'
 require 'forwardable'
 
 module KnuckleCluster
-  class AgentRegistry
+  class EcsAgentRegistry
     extend Forwardable
 
     def initialize(aws_client_config:, cluster_name:)
@@ -18,6 +18,17 @@ module KnuckleCluster
 
     def find_by(container_instance_arn:)
       agents_by_container_instance_arn[container_instance_arn]&.first
+    end
+
+    def output_agents
+      tp agents,
+        :index,
+        :instance_id,
+        # :public_ip,
+        # :private_ip,
+        # :availability_zone,
+        { task: { display_method: 'tasks.name', width: 999 } },
+        { container: { display_method: 'tasks.containers.name', width: 999 } }
     end
 
     def_delegators :task_registry, :tasks, :containers

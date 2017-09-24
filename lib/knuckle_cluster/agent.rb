@@ -6,8 +6,8 @@ module KnuckleCluster
       public_ip:,
       private_ip:,
       availability_zone:,
-      container_instance_arn:,
-      task_registry:
+      container_instance_arn: nil,
+      task_registry: nil
     )
       @index = index
       @instance_id = instance_id
