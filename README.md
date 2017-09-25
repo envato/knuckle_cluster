@@ -2,6 +2,7 @@
 
 Have you ever wanted to shuck away the hard, rough exterior of an ECS cluster and get to the soft, chewy innards? Sounds like you need KnuckleCluster!
 This tool provides scripts, invoked via cli or rakefile, to list, connect to and/or run commands on ecs agents and containers via ssh.  This makes it very easy to interrogate ECS agents and containers without having to go digging for IP addresses and things.
+Primarily created as a tool to connect to instances in an ECS cluster and see what is running on them, it has evolved slightly to include the ability to list instances in spot requests and auto-scaling groups.
 
 ## Features
 * See what agents in your ECS cluster are doing
