@@ -1,3 +1,4 @@
+require 'knuckle_cluster/asg_instance_registry'
 require 'knuckle_cluster/ecs_agent_registry'
 require 'knuckle_cluster/spot_request_instance_registry'
 require "knuckle_cluster/version"
@@ -14,6 +15,7 @@ module KnuckleCluster
     def new(
         cluster_name: nil,
         spot_request_id: nil,
+        asg_name: nil,
         region: 'us-east-1',
         bastion: nil,
         rsa_key_location: nil,
@@ -24,6 +26,7 @@ module KnuckleCluster
         tunnels: {})
       @cluster_name      = cluster_name
       @spot_request_id   = spot_request_id
+      @asg_name          = asg_name
       @region            = region
       @bastion           = bastion
       @rsa_key_location  = rsa_key_location
@@ -33,8 +36,8 @@ module KnuckleCluster
       @shortcuts         = shortcuts
       @tunnels           = tunnels
 
-      if @cluster_name.nil? && @spot_request_id.nil?
-        raise "Must specify either cluster_name or spot_request_id"
+      if @cluster_name.nil? && @spot_request_id.nil? && @asg_name.nil?
+        raise "Must specify either cluster_name, spot_request_id or asg name"
       end
       self
     end
@@ -78,7 +81,8 @@ module KnuckleCluster
 
     private
 
-    attr_reader :cluster_name, :spot_request_id, :region, :bastion, :rsa_key_location, :ssh_username,
+    attr_reader :cluster_name, :spot_request_id, :asg_name,
+                :region, :bastion, :rsa_key_location, :ssh_username,
                 :sudo, :aws_vault_profile, :shortcuts, :tunnels
 
     def select_agent(auto:)
@@ -195,6 +199,11 @@ module KnuckleCluster
           SpotRequestInstanceRegistry.new(
             aws_client_config: aws_client_config,
             spot_request_id:   spot_request_id,
+          )
+        elsif @asg_name
+          AsgInstanceRegistry.new(
+            aws_client_config: aws_client_config,
+            asg_name:          asg_name,
           )
         end
       )
