@@ -11,7 +11,7 @@ This tool provides scripts, invoked via cli or rakefile, to list, connect to and
 * Optionally integrates with [aws-vault](https://github.com/99designs/aws-vault) for AWS authentication
 
 ## Development Status
-Is being used in production for various projects and is considered stable. Any new features/bug fixes etc are most welcome!  Test coverage is minimal...
+Is being used in production for various projects and is considered stable. Any new features/bug fixes etc are most welcome!
 
 ## Installation
 
@@ -185,8 +185,9 @@ Possible options are below. If left blank, they will be ignored and defaults use
 
 Argument | Description
 -------- | -----------
-cluster_name | The name of the cluster (not the ARN). eg 'my-super-cluster'. Required (unless using spot_request_id)
-spot_request_id | The spot request ID you are connecting to. eg 'sfr-abcdef'. Required (unless using cluster_name)
+cluster_name | The name of the cluster (not the ARN). eg 'my-super-cluster'. One of `cluster_name`,`spot_request_id` or `asg_name` is required.
+spot_request_id | The spot request ID you are connecting to. eg 'sfr-abcdef'. One of `cluster_name`,`spot_request_id` or `asg_name` is required.
+asg_name | The spot request ID you are connecting to. eg 'sfr-abcdef'. One of `cluster_name`,`spot_request_id` or `asg_name` is required.
 region | The AWS region you would like to use. Defaults to `us-east-1`
 bastion | if you have a bastion to proxy to your ecs cluster via ssh, put the name of it here as defined in your `~/.ssh/config` file.
 rsa_key_location | The RSA key needed to connect to an ecs agent eg `~/.ssh/id_rsa`.
@@ -196,7 +197,10 @@ aws_vault_profile | If you use the `aws-vault` tool to manage your AWS credentia
 profile | Another profile to inherit settings from. Settings from lower profiles can be overridden in higher ones.
 
 ## Spot Fleets
-If you wish to see what instances are running within a spot fleet, KnuckleCluster can do that too!.  In your config, use `spot_request_id` instead of `cluster_name`.  Note that the `containers` command will not work when invoking.
+If you wish to see what instances are running within a spot fleet, KnuckleCluster can do that too!.  In your config, use `spot_request_id` instead of `cluster_name`.  Note that the `containers` command will not work when invoking (use `agents` instead).
+
+## AutoScaling Groups
+If you wish to see what instances are running within an ASG, KnuckleCluster can do that too!.  In your config, use `asg_name` instead of `cluster_name`.  Note that the `containers` command will not work when invoking (use `agents` instead).
 
 ## Maintainer
 [Envato](https://github.com/envato)
