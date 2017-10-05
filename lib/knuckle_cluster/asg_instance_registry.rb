@@ -31,6 +31,11 @@ module KnuckleCluster
     def load_agents
       auto_scaling_instances = autoscaling_client.describe_auto_scaling_groups(auto_scaling_group_names: [@asg_name]).to_h
 
+      if auto_scaling_instances[:auto_scaling_groups].empty?
+        puts "Could not find auto scaling group '#{asg_name}' in region #{aws_client_config[:region]}."
+        exit(0)
+      end
+
       instance_ids = auto_scaling_instances[:auto_scaling_groups][0][:instances].map{|instance| instance[:instance_id]}
 
       instance_reservations = ec2_client.describe_instances(instance_ids: instance_ids).reservations
