@@ -4,7 +4,11 @@ require 'knuckle_cluster/spot_request_instance_registry'
 require "knuckle_cluster/version"
 require "knuckle_cluster/configuration"
 
-require 'aws-sdk'
+require 'aws-sdk-core'
+require 'aws-sdk-ec2'
+require 'aws-sdk-ecs'
+require 'aws-sdk-autoscaling'
+
 require 'forwardable'
 require 'table_print'
 
