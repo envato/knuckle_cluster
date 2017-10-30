@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "rspec", "~> 3.0"
 
-  spec.add_dependency 'aws-sdk', '~> 2.8'
+  spec.add_dependency 'aws-sdk', '~> 3'
   spec.add_dependency 'table_print', '~> 1.5'
 
   spec.bindir      = "bin"
