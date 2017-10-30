@@ -46,7 +46,7 @@ module KnuckleCluster
     end
 
     def ec2_client
-      @ec2_client ||= Aws::EC2::Client.new(aws_client_config)
+      @ec2_client ||= ::Aws::EC2::Client.new(aws_client_config)
     end
 
   end

@@ -52,11 +52,11 @@ module KnuckleCluster
     end
 
     def ec2_client
-      @ec2_client ||= Aws::EC2::Client.new(aws_client_config)
+      @ec2_client ||= ::Aws::EC2::Client.new(aws_client_config)
     end
 
     def autoscaling_client
-      @autoscaling_client ||= Aws::AutoScaling::Client.new(aws_client_config)
+      @autoscaling_client ||= ::Aws::AutoScaling::Client.new(aws_client_config)
     end
 
   end
