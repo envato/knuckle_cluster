@@ -188,7 +188,7 @@ Argument | Description
 -------- | -----------
 cluster_name | The name of the cluster (not the ARN). eg 'my-super-cluster'. One of `cluster_name`,`spot_request_id` or `asg_name` is required.
 spot_request_id | The spot request ID you are connecting to. eg 'sfr-abcdef'. One of `cluster_name`,`spot_request_id` or `asg_name` is required.
-asg_name | The spot request ID you are connecting to. eg 'sfr-abcdef'. One of `cluster_name`,`spot_request_id` or `asg_name` is required.
+asg_name | The auto-scaling group name you are connecting to. eg 'very-scaly-group'. One of `cluster_name`,`spot_request_id` or `asg_name` is required.
 region | The AWS region you would like to use. Defaults to `us-east-1`
 bastion | if you have a bastion to proxy to your ecs cluster via ssh, put the name of it here as defined in your `~/.ssh/config` file.
 rsa_key_location | The RSA key needed to connect to an ecs agent eg `~/.ssh/id_rsa`.
