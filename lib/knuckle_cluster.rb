@@ -68,18 +68,25 @@ module KnuckleCluster
       run_command_in_container(container: container, command: command)
     end
 
-    def scp_to_agent(source:, destination:)
-      agent = select_agent
+    def scp_to_agent(source:, destination:, agent: nil)
+      agent ||= select_agent
       target_ip = bastion ? agent.private_ip : agent.public_ip
       command = generate_scp_connection_string(agent: agent)
       command += " #{source}"
       command += " #{ssh_username}@#{target_ip}:#{destination}"
-      puts command.inspect
       system(command)
+      puts "Done!"
     end
 
     def scp_to_container(source:, destination:)
-      raise "TODO"
+      container = select_container
+      agent     = container.task.agent
+      tmp_destination_file = '~/tmp_kc.tmp'
+      scp_to_agent(source: source, agent: agent, destination: tmp_destination_file)
+      container_id = get_container_id_command(container.name)
+      subcommand = "#{'sudo ' if sudo}docker cp #{tmp_destination_file} \\`#{container_id}\\`:#{destination} && rm #{tmp_destination_file}"
+      run_command_in_agent(agent: agent, command: subcommand)
+      puts "Done!"
     end
 
     def container_logs(name:)
@@ -114,7 +121,7 @@ module KnuckleCluster
       agents[STDIN.gets.strip.to_i - 1]
     end
 
-    def select_container(auto:)
+    def select_container(auto: false)
       return containers.first if auto
 
       puts "\nListing Containers"
