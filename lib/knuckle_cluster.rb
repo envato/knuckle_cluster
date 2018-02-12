@@ -68,6 +68,27 @@ module KnuckleCluster
       run_command_in_container(container: container, command: command)
     end
 
+    def scp_to_agent(source:, destination:, agent: nil)
+      agent ||= select_agent
+      target_ip = bastion ? agent.private_ip : agent.public_ip
+      command = generate_scp_connection_string(agent: agent)
+      command += " #{source}"
+      command += " #{ssh_username}@#{target_ip}:#{destination}"
+      system(command)
+      puts "Done!"
+    end
+
+    def scp_to_container(source:, destination:)
+      container = select_container
+      agent     = container.task.agent
+      tmp_destination_file = '~/tmp_kc.tmp'
+      scp_to_agent(source: source, agent: agent, destination: tmp_destination_file)
+      container_id = get_container_id_command(container.name)
+      subcommand = "#{'sudo ' if sudo}docker cp #{tmp_destination_file} \\`#{container_id}\\`:#{destination} && rm #{tmp_destination_file}"
+      run_command_in_agent(agent: agent, command: subcommand)
+      puts "Done!"
+    end
+
     def container_logs(name:)
       container = find_container(name: name)
       subcommand = "#{'sudo ' if sudo}docker logs -f \\`#{get_container_id_command(container.name)}\\`"
@@ -89,7 +110,7 @@ module KnuckleCluster
                 :region, :bastion, :rsa_key_location, :ssh_username,
                 :sudo, :aws_vault_profile, :shortcuts, :tunnels
 
-    def select_agent(auto:)
+    def select_agent(auto: false)
       return agents.first if auto
 
       puts "\nListing Agents"
@@ -100,7 +121,7 @@ module KnuckleCluster
       agents[STDIN.gets.strip.to_i - 1]
     end
 
-    def select_container(auto:)
+    def select_container(auto: false)
       return containers.first if auto
 
       puts "\nListing Containers"
@@ -180,6 +201,14 @@ module KnuckleCluster
           credentials[var_name] = vars["AWS_#{var_name.upcase}"]&.first&.last
         end
       end
+    end
+
+    def generate_scp_connection_string(agent:)
+      ip = bastion ? agent.private_ip : agent.public_ip
+      command = "scp"
+      command += " -i #{rsa_key_location}" if rsa_key_location
+      command += " -o ProxyCommand='ssh -qxT #{bastion} nc #{ip} 22'" if bastion
+      command
     end
 
     def generate_connection_string(agent:, subcommand: nil, port_forward: nil)
