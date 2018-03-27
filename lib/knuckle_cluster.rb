@@ -1,7 +1,6 @@
 require 'knuckle_cluster/asg_instance_registry'
 require 'knuckle_cluster/ecs_agent_registry'
 require 'knuckle_cluster/spot_request_instance_registry'
-require 'knuckle_cluster/scp'
 require "knuckle_cluster/version"
 require "knuckle_cluster/configuration"
 
@@ -85,7 +84,20 @@ module KnuckleCluster
         agent     = container.task.agent
         if source.start_with?('container')
           #This is SCP FROM container
-          raise "SCP From container not yet implemented"
+          source = source.split(':').last
+          tmp_source_file = '~/tmp_kc.tmp'
+          container_id = get_container_id_command(container.name)
+
+          subcommand = "#{'sudo ' if sudo}docker cp \\`#{container_id}\\`:#{source} #{tmp_source_file}"
+          run_command_in_agent(agent: agent, command: subcommand)
+
+          scp_source = generate_agent_scp_string(tmp_source_file, agent)
+          scp_with_agent(source: scp_source, agent: agent, destination: destination)
+
+          subcommand = "#{'sudo ' if sudo} rm #{tmp_source_file}"
+          run_command_in_agent(agent: agent, command: subcommand)
+
+          puts "Done!"
         elsif destination.start_with?('container')
           #SCP TO container
           destination = destination.split(':').last
@@ -94,7 +106,6 @@ module KnuckleCluster
           scp_with_agent(source: source, agent: agent, destination: tmp_destination)
           container_id = get_container_id_command(container.name)
           subcommand = "#{'sudo ' if sudo}docker cp #{tmp_destination_file} \\`#{container_id}\\`:#{destination} && rm #{tmp_destination_file}"
-          puts subcommand
           run_command_in_agent(agent: agent, command: subcommand)
           puts "Done!"
         end
