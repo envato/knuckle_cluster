@@ -12,7 +12,7 @@ if ARGV.count < 2
     knuckle_cluster CLUSTER_PROFILE CONTAINER_NAME [OPTIONAL COMMANDS] - connect to a container and start a shell or run a command
     knuckle_cluster CLUSTER_PROFILE SHORTCUT_NAME - run a shortcut defined in your knuckle_cluster configuration
     knuckle_cluster CLUSTER_PROFILE tunnel TUNNEL_NAME - open a tunnel defined in your knuckle_cluster configuration
-    knuckle_cluster CLUSTER_PROFILE scp [agent|container] source_file destination - copies a file from your local machine to a destaination container or agent
+    knuckle_cluster CLUSTER_PROFILE scp source destination - copied a file via scp to or from a container or agent. Use container:<location> or agent:<location>
   USAGE
   exit
 end
@@ -37,11 +37,7 @@ elsif ARGV[1] == 'logs'
 elsif ARGV[1] == 'tunnel'
   kc.open_tunnel(name: ARGV[2])
 elsif ARGV[1] == 'scp'
-  if ARGV[2] == 'agent'
-    kc.scp_to_agent(source: ARGV[3], destination: ARGV[4])
-  elsif ARGV[2] == 'container'
-    kc.scp_to_container(source: ARGV[3], destination: ARGV[4])
-  end
+  kc.initiate_scp(source: ARGV[2], destination: ARGV[3])
 else
   command = ARGV.drop(2)
   if command.any?
