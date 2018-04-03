@@ -1,6 +1,7 @@
 require 'knuckle_cluster/asg_instance_registry'
 require 'knuckle_cluster/ecs_agent_registry'
 require 'knuckle_cluster/spot_request_instance_registry'
+require "knuckle_cluster/scp"
 require "knuckle_cluster/version"
 require "knuckle_cluster/configuration"
 
@@ -15,6 +16,8 @@ require 'table_print'
 module KnuckleCluster
   class << self
     extend Forwardable
+
+    include Scp
 
     def new(
         cluster_name: nil,
@@ -66,27 +69,6 @@ module KnuckleCluster
 
       container = find_container(name: name)
       run_command_in_container(container: container, command: command)
-    end
-
-    def scp_to_agent(source:, destination:, agent: nil)
-      agent ||= select_agent
-      target_ip = bastion ? agent.private_ip : agent.public_ip
-      command = generate_scp_connection_string(agent: agent)
-      command += " #{source}"
-      command += " #{ssh_username}@#{target_ip}:#{destination}"
-      system(command)
-      puts "Done!"
-    end
-
-    def scp_to_container(source:, destination:)
-      container = select_container
-      agent     = container.task.agent
-      tmp_destination_file = '~/tmp_kc.tmp'
-      scp_to_agent(source: source, agent: agent, destination: tmp_destination_file)
-      container_id = get_container_id_command(container.name)
-      subcommand = "#{'sudo ' if sudo}docker cp #{tmp_destination_file} \\`#{container_id}\\`:#{destination} && rm #{tmp_destination_file}"
-      run_command_in_agent(agent: agent, command: subcommand)
-      puts "Done!"
     end
 
     def container_logs(name:)
@@ -201,14 +183,6 @@ module KnuckleCluster
           credentials[var_name] = vars["AWS_#{var_name.upcase}"]&.first&.last
         end
       end
-    end
-
-    def generate_scp_connection_string(agent:)
-      ip = bastion ? agent.private_ip : agent.public_ip
-      command = "scp"
-      command += " -i #{rsa_key_location}" if rsa_key_location
-      command += " -o ProxyCommand='ssh -qxT #{bastion} nc #{ip} 22'" if bastion
-      command
     end
 
     def generate_connection_string(agent:, subcommand: nil, port_forward: nil)

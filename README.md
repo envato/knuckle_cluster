@@ -102,6 +102,7 @@ knuckle_cluster CLUSTER_PROFILE logs CONTAINER_NAME - tail the logs for a contai
 knuckle_cluster CLUSTER_PROFILE CONTAINER_NAME [OPTIONAL COMMANDS] - connect to a container and start a shell or run a command
 knuckle_cluster CLUSTER_PROFILE SHORTCUT_NAME - run a shortcut defined in your knuckle_cluster configuration
 knuckle_cluster CLUSTER_PROFILE tunnel TUNNEL_NAME - open a tunnel defined in your knuckle_cluster configuration
+knuckle_cluster CLUSTER_PROFILE scp source destination - copied a file via scp to or from a container or agent. Use container:<location> or agent:<location>
 ```
 
 ### Rakefile usage
@@ -202,6 +203,22 @@ If you wish to see what instances are running within a spot fleet, KnuckleCluste
 
 ## AutoScaling Groups
 If you wish to see what instances are running within an ASG, KnuckleCluster can do that too!.  In your config, use `asg_name` instead of `cluster_name`.  Note that the `containers` command will not work when invoking (use `agents` instead).
+
+## SCP
+You can use Knuckle Cluster to copy files in and out of agents or containers.  Note that this will only work where one of the source or destination is your local machine, copying between containers is not yet supported.  Use a syntax similar to existing `scp` syntax when specifying a source or destination, but use the keyword `container` or `agent` for the remote. When using one of these keywords, you will be prompted as to which agent/container you wish to use.
+```
+#Copy some_file.txt into a container at /app/some_file.txt
+knuckle_cluster super_platform scp ./some_file.txt container:/app/some_file.txt
+
+#Copy /app/some_file.txt from a remote container to ./some_file.txt on your local machine
+knuckle_cluster super_platform scp container:/app/some_file.txt ./some_file.txt
+
+#Copy some_file.txt into an agent at ~/some_file.txt
+knuckle_cluster super_platform scp ./some_file.txt agent:~/some_file.txt
+
+#Copy /app/some_file.txt from a remote container to ./some_file.txt on your local machine
+knuckle_cluster super_platform scp agent:~/some_file.txt ./some_file.txt
+```
 
 ## Maintainer
 [Envato](https://github.com/envato)
