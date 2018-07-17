@@ -89,6 +89,17 @@ default_platform: &default_platform
   ssh_username: ubuntu
   sudo: true
   aws_vault_profile: platform_super_user
+
+default_platform: &default_platform
+  region: us-east-1
+  bastion:
+    username: ubuntu
+    host: bastion.endpoint.example.com
+    rsa_key_location: ~/.ssh/bastion_rsa_key
+  rsa_key_location: ~/.ssh/platform_rsa_key
+  ssh_username: ubuntu
+  sudo: true
+  aws_vault_profile: platform_super_user
 ```
 
 See [Options for Knuckle Cluster](#options-for-knuckle-cluster) below for a list of what each option does.
@@ -191,7 +202,7 @@ cluster_name | The name of the cluster (not the ARN). eg 'my-super-cluster'. One
 spot_request_id | The spot request ID you are connecting to. eg 'sfr-abcdef'. One of `cluster_name`,`spot_request_id` or `asg_name` is required.
 asg_name | The auto-scaling group name you are connecting to. eg 'very-scaly-group'. One of `cluster_name`,`spot_request_id` or `asg_name` is required.
 region | The AWS region you would like to use. Defaults to `us-east-1`
-bastion | if you have a bastion to proxy to your ecs cluster via ssh, put the name of it here as defined in your `~/.ssh/config` file.
+bastion | if you have a bastion to proxy to your ecs cluster via ssh, put the name of it here as defined in your `~/.ssh/config` file.  Alternatively, this can be a collection of keys for `username`, `host`, and `rsa_key_location`
 rsa_key_location | The RSA key needed to connect to an ecs agent eg `~/.ssh/id_rsa`.
 ssh_username | The username to conncet. Will default to `ec2-user`
 sudo | true or false - will sudo the `docker` command on the target machine. Usually not needed unless the user is not a part of the `docker` group.

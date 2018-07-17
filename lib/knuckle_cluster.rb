@@ -189,7 +189,11 @@ module KnuckleCluster
       ip = bastion ? agent.private_ip : agent.public_ip
       command = "ssh #{ip} -l#{ssh_username}"
       command += " -i #{rsa_key_location}" if rsa_key_location
-      command += " -o ProxyCommand='ssh -qxT #{bastion} nc #{ip} 22'" if bastion
+      if bastion.is_a? String
+        command += " -o ProxyCommand='ssh -qxT #{bastion} nc #{ip} 22'"
+      elsif bastion.is_a? Hash
+        command += " -o Proxycommand='ssh -qxt #{bastion[:host]} -l#{bastion[:username]} -i #{bastion[:rsa_key_location]} nc #{ip} 22'"
+      end
       command += " -L #{port_forward}" if port_forward
       command += " -t \"#{subcommand}\"" if subcommand
       command
