@@ -90,7 +90,7 @@ default_platform: &default_platform
   sudo: true
   aws_vault_profile: platform_super_user
 
-default_platform: &default_platform
+other_platform: &other_platform
   region: us-east-1
   bastion:
     username: ubuntu
