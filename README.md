@@ -107,6 +107,7 @@ See [Options for Knuckle Cluster](#options-for-knuckle-cluster) below for a list
 Command line options:
 
 ```
+knuckle_cluster list - list all available clusters
 knuckle_cluster CLUSTER_PROFILE agents - list all agents and select one to start a shell
 knuckle_cluster CLUSTER_PROFILE containers - list all containers and select one to start a shell
 knuckle_cluster CLUSTER_PROFILE logs CONTAINER_NAME - tail the logs for a container
