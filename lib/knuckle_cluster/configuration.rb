@@ -3,10 +3,8 @@ class KnuckleCluster::Configuration
   DEFAULT_PROFILE_FILE = File.join(ENV['HOME'],'.ssh/knuckle_cluster').freeze
 
   def self.load_parameters(profile:, profile_file: nil)
-    profile_file ||= DEFAULT_PROFILE_FILE
-    raise "File #{profile_file} not found" unless File.exists?(profile_file)
 
-    data = YAML.load_file(profile_file)
+    data = load_data(profile_file)
 
     unless data.keys.include?(profile)
       raise "Config file does not include profile for #{profile}"
@@ -31,6 +29,29 @@ class KnuckleCluster::Configuration
     output.delete('profile')
 
     keys_to_symbols(output)
+  end
+
+  def self.load_data(profile_file = nil)
+    @data ||= (
+      profile_file ||= DEFAULT_PROFILE_FILE
+      raise "File #{profile_file} not found" unless File.exists?(profile_file)
+      YAML.load_file(profile_file)
+    )
+  end
+
+  def self.list
+    data = []
+
+    KnuckleCluster::Configuration.load_data.each do |k,v|
+      tmp = {'name': k}
+      tmp['tunnels'] = v['tunnels'] ? v['tunnels'].keys.join(', ') : ''
+      tmp['shortcuts'] = v['shortcuts'] ? v['shortcuts'].keys.join(', ') : ''
+
+      data << tmp
+    end
+    puts "\nVersion #{KnuckleCluster::VERSION}"
+    puts "\nAvailable connections"
+    tp data.sort{|x,y| x[:name] <=> y[:name]}
   end
 
   private
