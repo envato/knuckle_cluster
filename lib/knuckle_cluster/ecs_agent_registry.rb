@@ -7,9 +7,10 @@ module KnuckleCluster
   class EcsAgentRegistry
     extend Forwardable
 
-    def initialize(aws_client_config:, cluster_name:)
+    def initialize(aws_client_config:, cluster_name:, hide: {})
       @aws_client_config = aws_client_config
-      @cluster_name = cluster_name
+      @cluster_name      = cluster_name
+      @hide              = hide
     end
 
     def agents
@@ -72,6 +73,7 @@ module KnuckleCluster
         ecs_client:     ecs_client,
         cluster_name:   cluster_name,
         agent_registry: self,
+        hide:           @hide,
       )
     end
 

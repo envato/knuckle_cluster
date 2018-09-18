@@ -3,14 +3,15 @@ require 'knuckle_cluster/container'
 
 module KnuckleCluster
   class TaskRegistry
-    def initialize(ecs_client:, cluster_name:, agent_registry:)
-      @ecs_client = ecs_client
-      @cluster_name = cluster_name
+    def initialize(ecs_client:, cluster_name:, agent_registry:, hide: {})
+      @ecs_client     = ecs_client
+      @cluster_name   = cluster_name
       @agent_registry = agent_registry
+      @hide           = hide
     end
 
     def tasks
-      @tasks ||= load_tasks
+      @tasks ||= load_tasks.compact
     end
 
     def containers
@@ -41,15 +42,28 @@ module KnuckleCluster
       ecs_client.describe_tasks(tasks: task_ids, cluster: cluster_name).tasks.flat_map do |task|
         agent = agent_registry.find_by(container_instance_arn: task.container_instance_arn)
 
+        task_name = task.task_definition_arn[/.*\/(.*):\d/,1]
+
+        if @hide[:task]
+          regex = Regexp.new(@hide[:task])
+          next if regex.match(task_name)
+        end
+
+        # next if task_name.include? 'datadog'
         Task.new(
           arn:                    task.task_arn,
           container_instance_arn: task.container_instance_arn,
           agent:                  agent,
           definition:             task.task_definition_arn[/.*\/(.*):.*/,1],
-          name:                   task.task_definition_arn[/.*\/(.*):\d/,1],
+          name:                   task_name,
           task_registry:          self,
         ).tap do |new_task|
           task.containers.each do |container|
+            if @hide[:container]
+              regex = Regexp.new(@hide[:container])
+              next if regex.match(container.name)
+            end
+
             index += 1
 
             all_containers << Container.new(
