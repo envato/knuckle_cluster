@@ -30,7 +30,8 @@ module KnuckleCluster
         sudo: false,
         aws_vault_profile: nil,
         shortcuts: {},
-        tunnels: {})
+        tunnels: {},
+        hide: {})
       @cluster_name      = cluster_name
       @spot_request_id   = spot_request_id
       @asg_name          = asg_name
@@ -42,6 +43,7 @@ module KnuckleCluster
       @aws_vault_profile = aws_vault_profile
       @shortcuts         = shortcuts
       @tunnels           = tunnels
+      @hide              = hide
 
       if @cluster_name.nil? && @spot_request_id.nil? && @asg_name.nil?
         raise "Must specify either cluster_name, spot_request_id or asg name"
@@ -205,6 +207,7 @@ module KnuckleCluster
           EcsAgentRegistry.new(
             aws_client_config: aws_client_config,
             cluster_name:      cluster_name,
+            hide:              @hide,
           )
         elsif @spot_request_id
           SpotRequestInstanceRegistry.new(

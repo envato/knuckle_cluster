@@ -69,6 +69,9 @@ platform:
       local_port: 54321
       remote_host: postgres-db.yourcompany.com
       remote_port: 5432
+  hide:
+    container: some_container_regex_i_dont_care_about
+    task: some_task_regex_i_dont_care_about
 ```
 
 You can also use inheritance to simplify the inclusion of multiple similar targets:
@@ -209,6 +212,7 @@ ssh_username | The username to conncet. Will default to `ec2-user`
 sudo | true or false - will sudo the `docker` command on the target machine. Usually not needed unless the user is not a part of the `docker` group.
 aws_vault_profile | If you use the `aws-vault` tool to manage your AWS credentials, you can specify a profile here that will be automatically used to connect to this cluster.
 profile | Another profile to inherit settings from. Settings from lower profiles can be overridden in higher ones.
+hide | allows you to specify a regex for either `task` or `container` to omit these from being shown
 
 ## Spot Fleets
 If you wish to see what instances are running within a spot fleet, KnuckleCluster can do that too!.  In your config, use `spot_request_id` instead of `cluster_name`.  Note that the `containers` command will not work when invoking (use `agents` instead).
