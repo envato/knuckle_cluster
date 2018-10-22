@@ -49,7 +49,14 @@ module KnuckleCluster
           next if regex.match(task_name)
         end
 
-        # next if task_name.include? 'datadog'
+        #Exclude any tasks that have no connectable containers
+        containers = task.containers
+        if @hide[:container]
+          regex = Regexp.new(@hide[:container])
+          containers.reject!{|container| regex.match(container.name)}
+        end
+        next unless containers.any?
+
         Task.new(
           arn:                    task.task_arn,
           container_instance_arn: task.container_instance_arn,
@@ -58,12 +65,7 @@ module KnuckleCluster
           name:                   task_name,
           task_registry:          self,
         ).tap do |new_task|
-          task.containers.each do |container|
-            if @hide[:container]
-              regex = Regexp.new(@hide[:container])
-              next if regex.match(container.name)
-            end
-
+          containers.each do |container|
             index += 1
 
             all_containers << Container.new(
