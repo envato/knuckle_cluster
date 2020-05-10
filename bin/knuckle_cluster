@@ -31,7 +31,7 @@ rescue => e
 end
 
 kc = KnuckleCluster.new(
-  config
+  **config
 )
 
 if ARGV[1] == 'agents'
