@@ -82,7 +82,7 @@ module KnuckleCluster
     def open_tunnel(name:)
       if tunnel = tunnels[name.to_sym]
         agent = select_agent(auto: true)
-        open_tunnel_via_agent(tunnel.merge(agent: agent))
+        open_tunnel_via_agent(**tunnel.merge(agent: agent))
       else
         puts "ERROR: A tunnel configuration was not found for '#{name}'"
       end
