@@ -7,9 +7,42 @@ if ARGV[0] == 'list'
   exit
 end
 
-profile = ARGV[0]
+require 'pastel'
+pastel = Pastel.new
 
-if ARGV.count < 2
+profile = ARGV[0]
+if profile.nil? && STDIN.tty?
+  require 'tty-prompt'
+  prompt = TTY::Prompt.new
+  profile = prompt.select("Which profile should we use?", KnuckleCluster::Configuration.load_data.keys.sort)
+end
+subcommand = ARGV[1]
+if !profile.nil? && subcommand.nil? && STDIN.tty?
+  require 'tty-prompt'
+  prompt = TTY::Prompt.new
+  tunnels = KnuckleCluster::Configuration.load_data[profile]['tunnels']
+  shortcuts = KnuckleCluster::Configuration.load_data[profile]['shortcuts']
+  choices = {
+    'Connect to a CONTAINER': 'containers',
+    'Connect to an AGENT': 'agents',
+    'Tail the logs on a CONTAINER': 'logs',
+    'Run a command on a CONTAINER': 'run',
+    'Copy a file to or from a CONTAINER': 'scp',
+  }
+  if !tunnels.nil?
+    tunnels.each do |k, v|
+      choices["#{pastel.yellow("tunnel")} #{k}"] = ['tunnel', k]
+    end
+  end
+  if !shortcuts.nil?
+    shortcuts.each do |k, v|
+      choices["#{pastel.yellow("shortcut")} #{k}"] = ['shortcut', k]
+    end
+  end
+  subcommand = prompt.select("What would you like to do on #{pastel.green(profile)} today?", choices)
+end
+
+if !STDIN.tty? && (profile.nil? || subcommand.nil?)
   puts <<~USAGE
     knuckle_cluster list - list all available clusters
     knuckle_cluster CLUSTER_PROFILE agents - list all agents and select one to start a shell
@@ -34,13 +67,13 @@ kc = KnuckleCluster.new(
   **config
 )
 
-if ARGV[1] == 'agents'
+if subcommand == 'agents'
   kc.connect_to_agents
-elsif ARGV[1] == 'containers'
+elsif subcommand == 'containers'
   kc.connect_to_containers
-elsif ARGV[1] == 'logs'
+elsif subcommand == 'logs'
   kc.container_logs(name: ARGV[2])
-elsif ARGV[1] == 'tunnel'
+elsif subcommand == 'tunnel'
   kc.open_tunnel(name: ARGV[2])
 elsif ARGV[1] == 'scp'
   kc.initiate_scp(source: ARGV[2], destination: ARGV[3])

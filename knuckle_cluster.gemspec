@@ -27,6 +27,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'aws-sdk-ec2',         '~> 1'
   spec.add_dependency 'aws-sdk-ecs',         '~> 1'
   spec.add_dependency 'aws-sdk-autoscaling', '~> 1'
+  spec.add_dependency 'tty-prompt'
+  spec.add_dependency 'tty-color'
+  spec.add_dependency 'pastel'
 
   spec.add_dependency 'table_print', '~> 1.5'
 
