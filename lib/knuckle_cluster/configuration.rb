@@ -34,7 +34,7 @@ class KnuckleCluster::Configuration
   def self.load_data(profile_file = nil)
     @data ||= (
       profile_file ||= DEFAULT_PROFILE_FILE
-      raise "File #{profile_file} not found" unless File.exists?(profile_file)
+      raise "File #{profile_file} not found" unless File.exist?(profile_file)
       YAML.load_file(profile_file)
     )
   end
