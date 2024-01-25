@@ -19,10 +19,6 @@ Gem::Specification.new do |spec|
   end
   spec.require_paths = ["lib"]
 
-  spec.add_development_dependency "rake",    "~> 10.0"
-  spec.add_development_dependency "rspec",   "~> 3.0"
-  spec.add_development_dependency "pry",     "~> 0.11"
-
   spec.add_dependency 'aws-sdk-core',        '~> 3'
   spec.add_dependency 'aws-sdk-ec2',         '~> 1'
   spec.add_dependency 'aws-sdk-ecs',         '~> 1'
