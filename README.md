@@ -214,6 +214,13 @@ aws_vault_profile | If you use the `aws-vault` tool to manage your AWS credentia
 profile | Another profile to inherit settings from. Settings from lower profiles can be overridden in higher ones.
 hide | allows you to specify a regex for either `task` or `container` to omit these from being shown
 
+## FAQ
+Ruby 3 related issue:
+```
+ERROR: There was a problem loading your configuration: Alias parsing was not enabled. To enable it, pass `aliases: true` to `Psych::load` or `Psych::safe_load`.
+```
+This is an issue with Psych changing the default behaviour around expanding aliases in Ruby 3. See [this issue](https://github.com/envato/knuckle_cluster/issues/32) for a workaround.
+
 ## Spot Fleets
 If you wish to see what instances are running within a spot fleet, KnuckleCluster can do that too!.  In your config, use `spot_request_id` instead of `cluster_name`.  Note that the `containers` command will not work when invoking (use `agents` instead).
 
