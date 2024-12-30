@@ -101,7 +101,7 @@ module KnuckleCluster
 
       output_agents
 
-      puts "\nConnect to which agent?"
+      puts "\nConnect to which agent? (INDEX)"
       agents[STDIN.gets.strip.to_i - 1]
     end
 
@@ -116,7 +116,7 @@ module KnuckleCluster
          { index: { display_method: 'containers.index' } },
          { container: { display_method: 'containers.name', width: 999 } }
 
-      puts "\nConnect to which container?"
+      puts "\nConnect to which container? (INDEX)"
       containers[STDIN.gets.strip.to_i - 1]
     end
 
