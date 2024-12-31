@@ -161,7 +161,7 @@ task-three        | i-456def456def456de | 4     | t3-container-one
                   |                     | 5     | t3-container-two
                   |                     | 6     | t3-container-three
 
-Connect to which container? (INDEX)
+Enter the INDEX number and press ENTER to connect:
 ```
 
 Same with connecting directly to agents
@@ -179,7 +179,7 @@ INDEX | INSTANCE_ID         | TASK       | CONTAINER
       |                     |            | t3-container-two
       |                     |            | t3-container-three
 
-Connect to which agent? (INDEX)
+Enter the INDEX number and press ENTER to connect:
 ```
 
 Both `connect_to_containers` and `connect_to_agents` can have the following optional arguments:
