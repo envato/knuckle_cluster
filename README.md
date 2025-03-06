@@ -74,37 +74,6 @@ platform:
     task: some_task_regex_i_dont_care_about
 ```
 
-You can also use inheritance to simplify the inclusion of multiple similar targets:
-```
-super_platform:
-  <<: *default_platform
-  cluster_name: super-platform-ecs-cluster-ABC123
-
-ultra_platform:
-  <<: *default_platform
-  cluster_name: ultra-platform-ecs-cluster-DEF987
-  sudo: false
-
-default_platform: &default_platform
-  region: us-east-1
-  bastion: platform_bastion
-  rsa_key_location: ~/.ssh/platform_rsa_key
-  ssh_username: ubuntu
-  sudo: true
-  aws_vault_profile: platform_super_user
-
-other_platform: &other_platform
-  region: us-east-1
-  bastion:
-    username: ubuntu
-    host: bastion.endpoint.example.com
-    rsa_key_location: ~/.ssh/bastion_rsa_key
-  rsa_key_location: ~/.ssh/platform_rsa_key
-  ssh_username: ubuntu
-  sudo: true
-  aws_vault_profile: platform_super_user
-```
-
 See [Options for Knuckle Cluster](#options-for-knuckle-cluster) below for a list of what each option does.
 
 Command line options:
@@ -214,11 +183,16 @@ aws_vault_profile | If you use the `aws-vault` tool to manage your AWS credentia
 profile | Another profile to inherit settings from. Settings from lower profiles can be overridden in higher ones.
 hide | allows you to specify a regex for either `task` or `container` to omit these from being shown
 
-## FAQ
-Ruby 3 related issue:
+## Known Issues
+
+### Aliases in the config file
+
+Currently, aliases cannot be used in the config file. If you have aliases in your config, you might see the following error.
+
 ```
 ERROR: There was a problem loading your configuration: Alias parsing was not enabled. To enable it, pass `aliases: true` to `Psych::load` or `Psych::safe_load`.
 ```
+
 This is an issue with Psych changing the default behaviour around expanding aliases in Ruby 3. See [this issue](https://github.com/envato/knuckle_cluster/issues/32) for a workaround.
 
 ## Spot Fleets
