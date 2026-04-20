@@ -9,7 +9,7 @@ Primarily created as a tool to connect to instances in an ECS cluster and see wh
 * Easily connect to running agents
 * Easily connect and get a console inside running containers
 * Create shortcuts to oft-used commands and run them easily
-* Optionally integrates with [aws-vault](https://github.com/99designs/aws-vault) for AWS authentication
+* Optionally integrates with [aws-vault](https://github.com/envato/aws-vault) for AWS authentication
 
 ## Development Status
 Is being used in production for various projects and is considered stable. Any new features/bug fixes etc are most welcome!
